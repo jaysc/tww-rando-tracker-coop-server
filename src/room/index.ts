@@ -4,6 +4,7 @@ import { User } from "../user";
 import type { Result } from "../actions";
 import { createStore, Store, Schema } from "tinybase";
 import { SaveOptions } from "../actions/save";
+import { GetOptions } from "../actions/get";
 
 export type uuid = string & { readonly _: unique symbol };
 
@@ -20,7 +21,7 @@ export enum SaveDataType {
 
 export type ItemPayload = {
   itemName: string;
-  count: number;
+  count?: number;
   location?: Location;
 };
 
@@ -32,7 +33,7 @@ export type Location = {
 export type LocationPayload = {
   generalLocation: string;
   detailedLocation: string;
-  isChecked: boolean;
+  isChecked?: boolean;
   itemName?: string;
 };
 
@@ -63,7 +64,6 @@ export class Room {
       locations: {},
     });
   }
-
   public GetItemStore = () => this.#itemStore.getTables();
   public GetLocationStore = () => this.#locationStore.getTables();
 
@@ -118,8 +118,39 @@ export class Room {
     }
   }
 
+  public GetData({ type, payload }: GetOptions) {
+    let result;
+
+    if (type === SaveDataType.ITEM) {
+      result = this.GetItem(payload as ItemPayload);
+    }
+    if (type === SaveDataType.LOCATION) {
+      result = this.GetLocation(payload as LocationPayload);
+    }
+
+    return result;
+  }
+
+  private GetItem({ itemName }: ItemPayload) {
+    if (itemName) {
+      return this.#itemStore.getTable(itemName);
+    } else {
+      return this.#itemStore.getTables();
+    }
+  }
+
+  private GetLocation({ generalLocation, detailedLocation }: LocationPayload) {
+    if (generalLocation || detailedLocation) {
+      return this.#locationStore.getTable(
+        `${generalLocation}-${detailedLocation}`
+      );
+    } else {
+      return this.#locationStore.getTables();
+    }
+  }
+
   private SaveItem(user: User, { itemName, count }: ItemPayload) {
-    this.#itemStore.setRow(itemName, user.id, { count });
+    this.#itemStore.setRow(itemName, user.id, { count: count ?? 0 });
   }
 
   private SaveLocation(
@@ -130,7 +161,7 @@ export class Room {
       `${generalLocation}-${detailedLocation}`,
       user.id,
       {
-        isChecked,
+        isChecked: isChecked ?? false,
         itemName: itemName ?? "",
       }
     );

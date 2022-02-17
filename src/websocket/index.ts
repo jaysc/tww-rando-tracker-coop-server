@@ -10,6 +10,7 @@ import {
 import type { User } from "../user/index.js";
 
 import * as _ from "lodash-es";
+import { Get } from "../actions/get.js";
 
 class Action {
   public data: object;
@@ -69,6 +70,8 @@ export const Route = (method?: string): Method | null => {
       return Message;
     case Actions.Save:
       return Save;
+    case Actions.Get:
+      return Get;
     default:
       console.log(`Method not found: ${parsedMethod}`);
       break;

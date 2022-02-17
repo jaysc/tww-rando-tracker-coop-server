@@ -40,6 +40,7 @@ export const OnMessage =
       JSON.stringify({
         message: result.message,
         err: result.err?.message,
+        data: result.data,
       })
     );
   };

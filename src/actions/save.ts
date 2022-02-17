@@ -1,10 +1,10 @@
-import { SaveDataType } from "../room/index.js";
+import { ItemPayload, LocationPayload, SaveDataType } from "../room/index.js";
 import type { User } from "../user/index.js";
 import type { Method, Result } from "./index.js";
 
 export interface SaveOptions extends Object {
   type?: SaveDataType;
-  payload?: object;
+  payload?: ItemPayload | LocationPayload;
 }
 
 export const Save: Method = (data: SaveOptions, user: User): Result => {

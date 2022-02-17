@@ -12,6 +12,7 @@ export enum Actions {
 export type Result = {
   message?: string;
   err?: Error;
+  data?: object;
 };
 
 export interface Method {
