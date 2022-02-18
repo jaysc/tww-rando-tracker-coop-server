@@ -4,8 +4,11 @@ import type { Method, Result } from ".";
 interface MessageData extends Object {
   message?: string;
 }
-export const Message: Method = (data: MessageData, user: User): Result => {
-  if (!data.message) {
+export const Message: Method = (
+  messageData: MessageData,
+  user: User
+): Result => {
+  if (!messageData.message) {
     return { message: "No message" };
   }
 
@@ -14,6 +17,6 @@ export const Message: Method = (data: MessageData, user: User): Result => {
   }
 
   //send a message
-  user.room?.SendMessage(data.message, user);
+  user.room?.SendMessage({ message: messageData.message }, user);
   return { message: "Message Sent" };
 };

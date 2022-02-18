@@ -1,10 +1,8 @@
 import * as _ from "lodash-es";
 import { v4 as uuidv4 } from "uuid";
 import { User } from "../user";
-import type { Result } from "../actions";
+import { Events, Result } from "../actions/index.js";
 import { createStore, Store, Schema } from "tinybase";
-import { SaveOptions } from "../actions/save";
-import { GetOptions } from "../actions/get";
 
 export type uuid = string & { readonly _: unique symbol };
 
@@ -20,26 +18,19 @@ export enum SaveDataType {
 }
 
 export type ItemPayload = {
+  type: SaveDataType;
   itemName: string;
   count?: number;
-  location?: Location;
-};
-
-export type Location = {
-  generalLocation: string;
-  detailedLocation: string;
+  generalLocation?: string;
+  detailedLocation?: string;
 };
 
 export type LocationPayload = {
+  type: SaveDataType;
   generalLocation: string;
   detailedLocation: string;
   isChecked?: boolean;
   itemName?: string;
-};
-
-export type LocationCell = {
-  userId: string;
-  itemName: string;
 };
 
 export class Room {
@@ -93,39 +84,39 @@ export class Room {
     return userRemoved;
   }
 
-  public SendMessage(message: string, user?: User) {
+  public SendMessage(response: Result, user?: User) {
     _.forEach(this.userIds, (userId) => {
       if (user && user.id === userId) {
         return;
       }
 
-      global.connections.forEach((ws) => {
-        if (ws.user?.id == userId) {
-          console.log(`userId: ${ws.user?.id}`);
-          console.log(`userId compare: ${userId}`);
-          ws.socket.send(message);
-        }
-      });
+      global.connections.get(userId)?.socket.send(JSON.stringify(response));
     });
   }
 
-  public SaveData(user: User, { type, payload }: SaveOptions) {
-    if (type === SaveDataType.ITEM) {
-      this.SaveItem(user, payload as ItemPayload);
+  public SaveData(user: User, saveOptions: ItemPayload | LocationPayload) {
+    if (saveOptions.type === SaveDataType.ITEM) {
+      this.SaveItem(user, saveOptions as ItemPayload);
     }
-    if (type === SaveDataType.LOCATION) {
-      this.SaveLocation(user, payload as LocationPayload);
+    if (saveOptions.type === SaveDataType.LOCATION) {
+      this.SaveLocation(user, saveOptions as LocationPayload);
     }
+
+    const message: Result = {
+      data: { ...saveOptions, userId: user.id, Event: Events.DataSaved },
+    };
+
+    this.SendMessage(message, user);
   }
 
-  public GetData({ type, payload }: GetOptions) {
+  public GetData(getOptions: ItemPayload | LocationPayload) {
     let result;
 
-    if (type === SaveDataType.ITEM) {
-      result = this.GetItem(payload as ItemPayload);
+    if (getOptions.type === SaveDataType.ITEM) {
+      result = this.GetItem(getOptions as ItemPayload);
     }
-    if (type === SaveDataType.LOCATION) {
-      result = this.GetLocation(payload as LocationPayload);
+    if (getOptions.type === SaveDataType.LOCATION) {
+      result = this.GetLocation(getOptions as LocationPayload);
     }
 
     return result;
@@ -149,21 +140,31 @@ export class Room {
     }
   }
 
-  private SaveItem(user: User, { itemName, count }: ItemPayload) {
-    this.#itemStore.setRow(itemName, user.id, { count: count ?? 0 });
+  private SaveItem(
+    user: User,
+    { itemName, count, generalLocation, detailedLocation }: ItemPayload
+  ) {
+    const dataToSave = _.omitBy({
+      count: count ?? 0,
+      generalLocation: generalLocation,
+      detailedLocation: detailedLocation,
+    }, _.isNil);
+
+    this.#itemStore.setPartialRow(itemName, user.id, dataToSave as {});
   }
 
   private SaveLocation(
     user: User,
     { generalLocation, detailedLocation, isChecked, itemName }: LocationPayload
   ) {
-    this.#locationStore.setRow(
+    const dataToSave = _.omitBy({
+      isChecked: isChecked,
+      itemName: itemName,
+    }, _.isNil);
+    this.#locationStore.setPartialRow(
       `${generalLocation}-${detailedLocation}`,
       user.id,
-      {
-        isChecked: isChecked ?? false,
-        itemName: itemName ?? "",
-      }
+      dataToSave as {}
     );
   }
 }
@@ -175,8 +176,9 @@ export class Rooms {
     return this.#rooms;
   }
 
-  public JoinRoom(user: User, roomOptions: RoomOptions): Result {
+  public JoinRoom(user: User, roomOptions: RoomOptions): Room | null {
     let room = this.FindRoomByName(roomOptions.name);
+    let roomId;
 
     if (room == null) {
       //Create room
@@ -190,13 +192,13 @@ export class Rooms {
       } else {
         //incorrect password
         console.warn("Incorrect password");
-        return new Error("Password incorrect");
+        return null;
       }
     } else {
       user.JoinRoom(room);
     }
 
-    return { message: `User joined room: ${room.name}` };
+    return room;
   }
 
   public LeaveRoom(room: Room, user: User) {

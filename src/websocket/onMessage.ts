@@ -5,6 +5,7 @@ import type { connection } from "../index.js";
 import { User } from "../user/index.js";
 import { DebugSend } from "./debugSend.js";
 import * as _ from "lodash-es";
+import { Events, Result } from "../actions/index.js";
 
 export const OnMessage =
   (server: FastifyInstance, con: connection, request: FastifyRequest) =>
@@ -24,7 +25,7 @@ export const OnMessage =
       con.user = new User(userId);
     }
 
-    const action = ParseData(message, con.user);
+    const { action, messageId } = ParseData(message, con.user) ?? {};
 
     if (action == null) {
       //Not json, do nothing.
@@ -35,12 +36,14 @@ export const OnMessage =
 
     DebugSend();
 
+    const response: Result = {
+      event: result.event || Events.Response,
+      messageId,
+      message: result.message,
+      err: result.err,
+      data: result.data,
+    };
+
     console.log(result);
-    con.socket.send(
-      JSON.stringify({
-        message: result.message,
-        err: result.err?.message,
-        data: result.data,
-      })
-    );
+    con.socket.send(JSON.stringify(response));
   };

@@ -1,25 +1,26 @@
-import { SaveDataType } from "../room/index.js";
+import { ItemPayload, LocationPayload, SaveDataType } from "../room/index.js";
 import type { Method, Result } from ".";
 import type { User } from "../user/index.js";
 
-export interface GetOptions extends Object {
-  type?: SaveDataType;
-  payload?: object;
-}
-
-export const Get: Method = (data: GetOptions, user: User) => {
+export const Get: Method = (
+  getOptions: ItemPayload | LocationPayload,
+  user: User
+) => {
   if (!user.room) {
     return {
       message: "User not in room",
     };
   }
 
-  if (data.type !== SaveDataType.ITEM && data.type !== SaveDataType.LOCATION) {
+  if (
+    getOptions.type !== SaveDataType.ITEM &&
+    getOptions.type !== SaveDataType.LOCATION
+  ) {
     return {
       message: "Type invalid",
     };
   }
-  let getResult = user.room.GetData(data);
+  let getResult = user.room.GetData(getOptions);
 
   if (getResult) {
     return {

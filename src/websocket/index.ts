@@ -1,16 +1,8 @@
 import type { RawData, WebSocketServer } from "ws";
 import type { Method, Result } from "../actions/index.js";
-import {
-  Actions,
-  JoinRoom,
-  LeaveRoom,
-  Message,
-  Save,
-} from "../actions/index.js";
 import type { User } from "../user/index.js";
-
+import { Route } from "../actions/index.js";
 import * as _ from "lodash-es";
-import { Get } from "../actions/get.js";
 
 class Action {
   public data: object;
@@ -31,50 +23,27 @@ class Action {
   }
 }
 
-export const ParseData = (payload: RawData, user: User): Action | null => {
+export const ParseData = (
+  rawData: RawData,
+  user: User
+): { action: Action; messageId?: string } | null => {
   try {
-    let parsedData = JSON.parse(payload.toString());
+    let parsedData = JSON.parse(rawData.toString());
     const methodName = _.get(parsedData, "method");
+    const payload = _.get(parsedData, "payload");
     console.log(parsedData);
 
     let parsedMethod = Route(methodName);
-    if (parsedMethod) {
-      return new Action(
-        _.get(parsedData, "data"),
-        methodName,
-        parsedMethod,
-        user
-      );
+    if (parsedMethod && payload) {
+      return {
+        action: new Action(payload, methodName, parsedMethod, user),
+        messageId: _.get(parsedData, "messageId"),
+      };
     }
   } catch (ex) {
-    console.warn(`Error parsing data:`, payload.toString());
+    console.warn(`Error parsing data:`, rawData.toString());
     console.warn("Exception:", ex);
     return null;
-  }
-
-  return null;
-};
-
-export const Route = (method?: string): Method | null => {
-  if (method == null) {
-    return null;
-  }
-  var parsedMethod: Actions = Actions[method as keyof typeof Actions];
-
-  switch (parsedMethod) {
-    case Actions.JoinRoom:
-      return JoinRoom;
-    case Actions.LeaveRoom:
-      return LeaveRoom;
-    case Actions.Message:
-      return Message;
-    case Actions.Save:
-      return Save;
-    case Actions.Get:
-      return Get;
-    default:
-      console.log(`Method not found: ${parsedMethod}`);
-      break;
   }
 
   return null;

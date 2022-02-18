@@ -34,7 +34,7 @@
             }
 
             connectWs = () => {
-                this.websocket = new WebSocket("ws://localhost:8080/ws", "protocolOne");
+                this.websocket = new WebSocket("ws://localhost:3001/ws", "protocolOne");
 
                 this.websocket.onmessage = function (event) {
                     console.log("Received a message client")

@@ -1,6 +1,7 @@
+import { User } from "../user/index.js";
 import type { Method, Result } from "./index.js";
 
-export const LeaveRoom: Method = (data, user): Result => {
+export const LeaveRoom: Method = (_, user: User): Result => {
   if (!user.room) {
     return { message: "User not in room" };
   }
