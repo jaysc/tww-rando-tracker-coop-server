@@ -162,7 +162,7 @@ export class Room {
       itemName: itemName,
     }, _.isNil);
     this.#locationStore.setPartialRow(
-      `${generalLocation}-${detailedLocation}`,
+      `${generalLocation}#${detailedLocation}`,
       user.id,
       dataToSave as {}
     );
