@@ -10,6 +10,7 @@ export interface RoomOptions {
   name: string;
   password?: string;
   perma?: string;
+  mode?: Mode;
 }
 
 export enum SaveDataType {
@@ -33,19 +34,26 @@ export type LocationPayload = {
   itemName?: string;
 };
 
+export enum Mode {
+  ITEMSYNC = "ITEMSYNC",
+  COOP = "COOP",
+}
+
 export class Room {
   #password?: string;
   #itemStore: Store = createStore();
   #locationStore: Store = createStore();
+  #mode: Mode;
 
   public perma?: string;
   public id: uuid;
   public userIds: Array<string> = [];
   public name: string;
 
-  constructor({ name, password, perma }: RoomOptions) {
+  constructor({ name, password, perma, mode }: RoomOptions) {
     this.id = uuidv4() as uuid;
     this.#password = password;
+    this.#mode = mode ?? Mode.ITEMSYNC;
 
     this.name = name;
     this.perma = perma;
@@ -55,10 +63,22 @@ export class Room {
       locations: {},
     });
   }
+
   public GetItemStore = () => this.#itemStore.getTables();
   public GetLocationStore = () => this.#locationStore.getTables();
 
   public HasPassword = () => !_.isEmpty(this.#password);
+
+  public GetStatus() {
+    return {
+      name: this.name,
+      perma: this.perma,
+      mode: this.#mode,
+      users: this.userIds,
+      items: this.#itemStore.getTables(),
+      locations: this.#locationStore.getTables(),
+    };
+  }
 
   public PasswordAccept(password?: string) {
     if (this.HasPassword()) {
@@ -103,7 +123,8 @@ export class Room {
     }
 
     const message: Result = {
-      data: { ...saveOptions, userId: user.id, Event: Events.DataSaved },
+      event: Events.DataSaved,
+      data: { ...saveOptions, userId: user.id},
     };
 
     this.SendMessage(message, user);
@@ -140,30 +161,44 @@ export class Room {
     }
   }
 
+  private SaveId(user: User) {
+    return this.#mode === Mode.ITEMSYNC ? this.id : user.id;
+  }
+
   private SaveItem(
     user: User,
     { itemName, count, generalLocation, detailedLocation }: ItemPayload
   ) {
-    const dataToSave = _.omitBy({
-      count: count ?? 0,
-      generalLocation: generalLocation,
-      detailedLocation: detailedLocation,
-    }, _.isNil);
+    const dataToSave = _.omitBy(
+      {
+        count: count ?? 0,
+        generalLocation: generalLocation,
+        detailedLocation: detailedLocation,
+      },
+      _.isNil
+    );
 
-    this.#itemStore.setPartialRow(itemName, user.id, dataToSave as {});
+    this.#itemStore.setPartialRow(
+      itemName,
+      this.SaveId(user),
+      dataToSave as {}
+    );
   }
 
   private SaveLocation(
     user: User,
     { generalLocation, detailedLocation, isChecked, itemName }: LocationPayload
   ) {
-    const dataToSave = _.omitBy({
-      isChecked: isChecked,
-      itemName: itemName,
-    }, _.isNil);
+    const dataToSave = _.omitBy(
+      {
+        isChecked: isChecked,
+        itemName: itemName,
+      },
+      _.isNil
+    );
     this.#locationStore.setPartialRow(
       `${generalLocation}#${detailedLocation}`,
-      user.id,
+      this.SaveId(user),
       dataToSave as {}
     );
   }

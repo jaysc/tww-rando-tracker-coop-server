@@ -7,16 +7,7 @@ export const DebugSend = () => {
     let debugResult = {};
     for (const roomId in rooms) {
       const room = rooms[roomId as uuid];
-      _.set(debugResult, ["rooms", roomId, "name"], room.name);
-      _.set(debugResult, ["rooms", roomId, "perma"], room.perma);
-
-      _.set(debugResult, ["rooms", roomId, "users"], room.userIds);
-      _.set(debugResult, ["rooms", roomId, "items"], room.GetItemStore());
-      _.set(
-        debugResult,
-        ["rooms", roomId, "locations"],
-        room.GetLocationStore()
-      );
+      _.set(debugResult, ["rooms", roomId], room.GetStatus());
     }
 
     const allUsers = [];
