@@ -12,7 +12,7 @@ export const JoinRoom: Method = (
     return { err: Error("No room name specified") };
   }
 
-  const room = global.rooms.JoinRoom(user, roomOptions);
+  const room = user.JoinRoom(roomOptions);
 
   if (room) {
     return {

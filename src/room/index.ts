@@ -26,6 +26,7 @@ export type ItemPayload = {
   count?: number;
   generalLocation?: string;
   detailedLocation?: string;
+  sphere?: number;
 };
 
 export type LocationPayload = {
@@ -34,6 +35,7 @@ export type LocationPayload = {
   detailedLocation: string;
   isChecked?: boolean;
   itemName?: string;
+  sphere?: number;
 };
 
 export enum Mode {
@@ -77,8 +79,6 @@ export class Room {
 
   public HasPassword = () => !_.isEmpty(this.#password);
 
-  private AutoRemove() {}
-
   public GetStatus() {
     return {
       name: this.name,
@@ -101,6 +101,7 @@ export class Room {
 
   public AddUser(user: User) {
     this.#userIds = _.union(this.#userIds, [user.id]);
+    user.roomId = this.id;
     this.lastAction = new Date();
   }
 
@@ -189,13 +190,14 @@ export class Room {
 
   private SaveItem(
     user: User,
-    { itemName, count, generalLocation, detailedLocation }: ItemPayload
+    { itemName, count, generalLocation, detailedLocation, sphere }: ItemPayload
   ) {
     const dataToSave = _.omitBy(
       {
         count: count ?? 0,
         generalLocation: generalLocation,
         detailedLocation: detailedLocation,
+        sphere,
       },
       _.isNil
     );
@@ -209,12 +211,19 @@ export class Room {
 
   private SaveLocation(
     user: User,
-    { generalLocation, detailedLocation, isChecked, itemName }: LocationPayload
+    {
+      generalLocation,
+      detailedLocation,
+      isChecked,
+      itemName,
+      sphere,
+    }: LocationPayload
   ) {
     const dataToSave = _.omitBy(
       {
         isChecked: isChecked,
         itemName: itemName,
+        sphere: sphere,
       },
       _.isNil
     );
@@ -258,35 +267,42 @@ export class Rooms {
 
     for (const roomId of roomsToDelete) {
       console.log("Removing room: ", roomId);
-      delete this.#rooms[roomId as uuid];
+      this.DeleteRoom(roomId as uuid);
     }
 
     DebugSend();
+  }
+
+  public DeleteRoom(roomId: uuid) {
+    delete this.#rooms[roomId as uuid];
   }
 
   get Rooms() {
     return this.#rooms;
   }
 
+  private CreateRoom(roomOptions: RoomOptions) {
+    const room = new Room(roomOptions);
+    this.#rooms[room.id] = room;
+    return room;
+  }
+
   public JoinRoom(user: User, roomOptions: RoomOptions): Room | null {
     let room = this.FindRoomByName(roomOptions.name);
-    let roomId;
 
     if (room == null) {
-      //Create room
-      room = new Room(roomOptions);
-      this.#rooms[room.id] = room;
-      user.JoinRoom(room);
+      room = this.CreateRoom(roomOptions);
+      room.AddUser(user);
     } else if (room.HasPassword()) {
       if (room.PasswordAccept(roomOptions.password)) {
-        user.JoinRoom(room);
+        room.AddUser(user);
       } else {
         //incorrect password
         console.warn("Incorrect password");
         return null;
       }
     } else {
-      user.JoinRoom(room);
+      room.AddUser(user);
     }
 
     return room;

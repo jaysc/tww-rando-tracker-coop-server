@@ -20,7 +20,7 @@ export const Get: Method = (
       message: "Type invalid",
     };
   }
-  let getResult = global.rooms.FindRoomById(user.roomId);
+  let getResult = user.Room?.GetData(getOptions);
 
   if (getResult) {
     return {

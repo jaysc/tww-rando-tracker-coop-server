@@ -47,7 +47,7 @@ export const Set: Method = (
     }
   }
 
-  const room = global.rooms.FindRoomById(user.roomId);
+  const room = user.Room;
   if (room) {
     room.SaveData(user, saveOptions);
   } else {

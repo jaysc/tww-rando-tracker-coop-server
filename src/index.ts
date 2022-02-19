@@ -7,10 +7,11 @@ dotenv.config();
 import fws, { SocketStream } from "fastify-websocket";
 import fc from "fastify-cookie";
 import { User } from "./user/index.js";
-import { Rooms } from "./room/index.js";
+import { Rooms, uuid } from "./room/index.js";
 import { WsHandler } from "./websocket/wsHandler.js";
 import path, { join } from "path/win32";
 import { fileURLToPath } from "url";
+import { DebugSend } from "./websocket/debugSend.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -44,11 +45,27 @@ server.route({
   url: "/ws",
   wsHandler: WsHandler(server),
   handler: (req, reply) => {
-    const file = join(__dirname, "view/index.html");
+    const file = join(__dirname, "view/ws.html");
 
     const stream = fs.createReadStream(file);
     reply.type("text/html").send(stream);
   },
+});
+
+server.get("/", (request, reply) => {
+  const file = join(__dirname, "view/index.html");
+  const stream = fs.createReadStream(file);
+  reply.type("text/html").send(stream);
+});
+
+server.get("/delete/:roomId", (request, reply) => {
+  if (request.cookies.userId == process.env.ADMIN_ID) {
+    const { roomId } = request.params as { roomId: uuid };
+    global.rooms.DeleteRoom(roomId);
+    DebugSend();
+  }
+
+  reply.status(200).send();
 });
 
 server.listen(process.env.PORT, (err, address) => {
@@ -59,10 +76,3 @@ server.listen(process.env.PORT, (err, address) => {
 
   console.log(`Server listening at ${address}`);
 });
-
-//todo Cleanup rooms after x time.
-
-export type Result<T, Error> = {
-  ok: T;
-  error: Error;
-};

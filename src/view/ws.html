@@ -1,0 +1,102 @@
+<html>
+
+<body>
+
+    <div id="app"></div>
+
+    <script src="https://unpkg.com/react@17/umd/react.development.js" crossorigin></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.development.js" crossorigin></script>
+
+    <!-- <script crossorigin src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script crossorigin src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script> -->
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+
+    <script type="text/babel">
+
+        class App extends React.Component {
+            constructor(props) {
+                super(props);
+                this.state = { data: "" };
+                this.websocket = null;
+                this.retryConnectWsInterval = null;
+            }
+
+            setData = (newData) => {
+                if (newData)
+                {
+                    this.setState({
+                        data: newData
+                    })
+                }
+            }
+
+            componentDidMount() {
+                this.connectWs();
+            }
+
+            retryConnectWs = () => {
+                if (!this.retryConnectWsInterval)
+                {
+                    this.websocket = null;
+                    this.retryConnectWsInterval = setInterval(this.connectWs, 2000);
+                }
+            }
+
+            clearConnectWs = () => {
+                clearInterval(this.retryConnectWsInterval);
+                this.retryInterval = null;
+            }
+
+            connectWs = () => {
+                let websocketUrl = document.URL;
+                websocketUrl = websocketUrl.replace('http://', 'ws://')
+                websocketUrl = websocketUrl.replace('https://', 'ws://')
+                websocketUrl = new URL('ws', websocketUrl).href;
+
+                this.websocket = new WebSocket(websocketUrl, "protocolOne");
+
+                this.websocket.onmessage = function (event) {
+                    console.log("Received a message client")
+                    this.setData(event.data)
+                }.bind(this);
+
+                this.websocket.onopen = function (event) {
+                    this.clearConnectWs();
+                    var msg = {
+                        debug: "true",
+                    };
+                    this.websocket.send(JSON.stringify(msg));
+                    //this.setData("Connected")
+                }.bind(this);
+
+                this.websocket.onclose = function (event) {
+                    this.setData("Connection closed")
+                    this.retryConnectWs();
+                }.bind(this);
+
+                this.websocket.onerror = function (event) {
+                    this.setData("Connection error")
+                    this.retryConnectWs();
+                }.bind(this);
+
+                return "Connected!";
+            }
+
+            render() {
+                return (<div>
+                    <ConsoleLog data={this.state.data} />
+                </div>)
+            }
+        }
+
+        function ConsoleLog(props) {
+            const { data } = props;
+
+            return (<pre>{data || "No Data"}</pre>)
+        }
+
+        ReactDOM.render(React.createElement(App), document.getElementById('app'));
+    </script>
+</body>
+
+</html>

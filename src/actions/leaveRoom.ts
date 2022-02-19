@@ -7,7 +7,6 @@ export const LeaveRoom: Method = (_, user: User): Result => {
   }
 
   //Disconnect from room
-  global.rooms.LeaveRoom(user.roomId, user);
-
+  user.leaveRoom();
   return { message: `Left room: ${user.roomId}` };
 };

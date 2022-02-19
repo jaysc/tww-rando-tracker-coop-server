@@ -3,6 +3,7 @@ import { OnMessage } from "./onMessage.js";
 import type { connection } from "../index.js";
 import { User } from "../user/index.js";
 import { Events, Result } from "../actions/index.js";
+import { DebugSend } from "./debugSend.js";
 
 export const WsHandler =
   (server: FastifyInstance) => (con: connection, request: FastifyRequest) => {
@@ -23,6 +24,7 @@ export const WsHandler =
       if (con.user) {
         global.rooms.UserDisconnect(con.user);
         global.connections.delete(con.user.id);
+        DebugSend();
       }
     });
 

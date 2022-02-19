@@ -1,5 +1,5 @@
 import { v4 } from "uuid";
-import { Room, uuid } from "../room";
+import { Room, RoomOptions, uuid } from "../room";
 import * as _ from "lodash-es";
 
 export class User {
@@ -10,9 +10,12 @@ export class User {
     this.id = userID || v4();
   }
 
-  public JoinRoom(room: Room) {
-    this.roomId = room.id;
-    room.AddUser(this);
+  get Room() {
+    return this.roomId ? global.rooms.FindRoomById(this.roomId) : null;
+  }
+
+  public JoinRoom(roomOptions: RoomOptions): Room | null {
+    return global.rooms.JoinRoom(this, roomOptions);
   }
 
   public leaveRoom() {
