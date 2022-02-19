@@ -1,6 +1,4 @@
-# tww-rando-tracker-websocket
-
-A fork of jaysc/websocket-room specifically for tww-rando-tracker.
+# tww-rando-tracker-coop-server
 
 ## Introduction
 
