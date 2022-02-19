@@ -30,11 +30,11 @@ export const ParseData = (
   try {
     let parsedData = JSON.parse(rawData.toString());
     const methodName = _.get(parsedData, "method");
-    const payload = _.get(parsedData, "payload");
+    const payload = _.get(parsedData, "payload") ?? {};
     console.log(parsedData);
 
     let parsedMethod = Route(methodName);
-    if (parsedMethod && payload) {
+    if (parsedMethod) {
       return {
         action: new Action(payload, methodName, parsedMethod, user),
         messageId: _.get(parsedData, "messageId"),
@@ -45,6 +45,7 @@ export const ParseData = (
     console.warn("Exception:", ex);
     return null;
   }
+
 
   return null;
 };

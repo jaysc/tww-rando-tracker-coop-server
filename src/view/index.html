@@ -18,6 +18,7 @@
                 super(props);
                 this.state = { data: "" };
                 this.websocket = null;
+                this.retryConnectWsInterval = null;
             }
 
             setData = (newData) => {
@@ -30,11 +31,23 @@
             }
 
             componentDidMount() {
-                this.connectWs()
+                this.connectWs();
+            }
+
+            retryConnectWs = () => {
+                if (!this.retryConnectWsInterval)
+                {
+                    this.retryConnectWsInterval = setInterval(this.connectWs, 2000);
+                }
             }
 
             connectWs = () => {
-                this.websocket = new WebSocket("ws://localhost:3001/ws", "protocolOne");
+                let websocketUrl = document.URL;
+                websocketUrl = websocketUrl.replace('http://', 'ws://')
+                websocketUrl = websocketUrl.replace('https://', 'ws://')
+                websocketUrl = new URL('ws', websocketUrl).href;
+
+                this.websocket = new WebSocket(websocketUrl, "protocolOne");
 
                 this.websocket.onmessage = function (event) {
                     console.log("Received a message client")
@@ -42,20 +55,24 @@
                 }.bind(this);
 
                 this.websocket.onopen = function (event) {
+                    clearInterval(this.retryConnectWsInterval);
+                    this.retryInterval = null;
                     var msg = {
                         debug: "true",
                     };
-    
+
                     this.websocket.send(JSON.stringify(msg));
                     //this.setData("Connected")
                 }.bind(this);
 
                 this.websocket.onclose = function (event) {
                     this.setData("Connection closed")
+                    this.retryConnectWs();
                 }.bind(this);
 
                 this.websocket.onerror = function (event) {
                     this.setData("Connection error")
+                    this.retryConnectWs();
                 }.bind(this);
 
                 return "Connected!";
@@ -69,7 +86,7 @@
         }
 
         function ConsoleLog(props) {
-            const {data } = props;
+            const { data } = props;
 
             return (<pre>{data || "No Data"}</pre>)
         }

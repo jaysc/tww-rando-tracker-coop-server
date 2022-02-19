@@ -1,21 +1,24 @@
 import { v4 } from "uuid";
-import { Room } from "../room";
+import { Room, uuid } from "../room";
 import * as _ from "lodash-es";
 
 export class User {
   public id: string;
-  public room: Room | null = null;
+  public roomId?: uuid;
+
   constructor(userID?: string) {
     this.id = userID || v4();
   }
 
   public JoinRoom(room: Room) {
-    this.room = room;
+    this.roomId = room.id;
     room.AddUser(this);
   }
 
   public leaveRoom() {
-    this.room?.RemoveUser(this);
-    this.room = null;
+    if (this.roomId) {
+      global.rooms.LeaveRoom(this.roomId, this);
+      this.roomId = undefined;
+    }
   }
 }

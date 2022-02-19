@@ -3,6 +3,8 @@ import { v4 as uuidv4 } from "uuid";
 import { User } from "../user";
 import { Events, Result } from "../actions/index.js";
 import { createStore, Store, Schema } from "tinybase";
+import { differenceInMinutes } from "date-fns";
+import { DebugSend } from "../websocket/debugSend.js";
 
 export type uuid = string & { readonly _: unique symbol };
 
@@ -44,11 +46,13 @@ export class Room {
   #itemStore: Store = createStore();
   #locationStore: Store = createStore();
   #mode: Mode;
+  #userIds: Array<string> = [];
 
   public perma?: string;
   public id: uuid;
-  public userIds: Array<string> = [];
   public name: string;
+  public createdDate: Date = new Date();
+  public lastAction: Date = new Date();
 
   constructor({ name, password, perma, mode }: RoomOptions) {
     this.id = uuidv4() as uuid;
@@ -64,19 +68,27 @@ export class Room {
     });
   }
 
-  public GetItemStore = () => this.#itemStore.getTables();
-  public GetLocationStore = () => this.#locationStore.getTables();
+  get ItemStore() {
+    return this.#itemStore.getTables();
+  }
+  get LocationStore() {
+    return this.#locationStore.getTables();
+  }
 
   public HasPassword = () => !_.isEmpty(this.#password);
+
+  private AutoRemove() {}
 
   public GetStatus() {
     return {
       name: this.name,
       perma: this.perma,
       mode: this.#mode,
-      users: this.userIds,
-      items: this.#itemStore.getTables(),
-      locations: this.#locationStore.getTables(),
+      createdDate: this.createdDate,
+      lastAction: this.lastAction,
+      users: this.#userIds,
+      items: this.ItemStore,
+      locations: this.LocationStore,
     };
   }
 
@@ -88,12 +100,13 @@ export class Room {
   }
 
   public AddUser(user: User) {
-    this.userIds = _.union(this.userIds, [user.id]);
+    this.#userIds = _.union(this.#userIds, [user.id]);
+    this.lastAction = new Date();
   }
 
   public RemoveUser(user: User): boolean {
     let userRemoved = false;
-    _.remove(this.userIds, (x) => {
+    _.remove(this.#userIds, (x) => {
       const temp = x == user.id;
       if (!userRemoved) {
         userRemoved = temp;
@@ -101,17 +114,25 @@ export class Room {
       return temp;
     });
 
+    this.lastAction = new Date();
+
     return userRemoved;
   }
 
+  public HasUser(user: User) {
+    return this.#userIds.includes(user.id);
+  }
+
   public SendMessage(response: Result, user?: User) {
-    _.forEach(this.userIds, (userId) => {
+    _.forEach(this.#userIds, (userId) => {
       if (user && user.id === userId) {
         return;
       }
 
       global.connections.get(userId)?.socket.send(JSON.stringify(response));
     });
+
+    this.lastAction = new Date();
   }
 
   public SaveData(user: User, saveOptions: ItemPayload | LocationPayload) {
@@ -124,7 +145,7 @@ export class Room {
 
     const message: Result = {
       event: Events.DataSaved,
-      data: { ...saveOptions, userId: user.id},
+      data: { ...saveOptions, userId: user.id },
     };
 
     this.SendMessage(message, user);
@@ -140,6 +161,7 @@ export class Room {
       result = this.GetLocation(getOptions as LocationPayload);
     }
 
+    this.lastAction = new Date();
     return result;
   }
 
@@ -202,12 +224,47 @@ export class Room {
       dataToSave as {}
     );
   }
+
+  public FlagDelete() {
+    // Delete room if empty
+    // Delete room if last action is older than 30 minutes
+    return (
+      this.#userIds.length == 0 ||
+      differenceInMinutes(new Date(), this.lastAction) >
+        parseInt(process.env.ROOM_LIFETIME_MINUTES)
+    );
+  }
 }
 
 export class Rooms {
   #rooms: { [RoomId: uuid]: Room } = {};
 
-  public GetRooms() {
+  constructor() {
+    setInterval(
+      this.DeleteInvalidRooms.bind(this),
+      parseInt(process.env.CHECK_INTERVAL)
+    );
+  }
+
+  private DeleteInvalidRooms() {
+    console.log("Checking room");
+    const roomsToDelete = [];
+    for (const roomId in this.#rooms) {
+      const room = this.#rooms[roomId as uuid];
+      if (room.FlagDelete()) {
+        roomsToDelete.push(roomId);
+      }
+    }
+
+    for (const roomId of roomsToDelete) {
+      console.log("Removing room: ", roomId);
+      delete this.#rooms[roomId as uuid];
+    }
+
+    DebugSend();
+  }
+
+  get Rooms() {
     return this.#rooms;
   }
 
@@ -219,7 +276,6 @@ export class Rooms {
       //Create room
       room = new Room(roomOptions);
       this.#rooms[room.id] = room;
-
       user.JoinRoom(room);
     } else if (room.HasPassword()) {
       if (room.PasswordAccept(roomOptions.password)) {
@@ -236,8 +292,15 @@ export class Rooms {
     return room;
   }
 
-  public LeaveRoom(room: Room, user: User) {
-    return this.FindRoomById(room.id)?.RemoveUser(user);
+  public LeaveRoom(roomId: uuid, user: User) {
+    return this.FindRoomById(roomId as uuid)?.RemoveUser(user);
+  }
+
+  public UserDisconnect(user: User) {
+    for (let roomId in this.#rooms) {
+      const room = this.#rooms[roomId as uuid];
+      room.RemoveUser(user);
+    }
   }
 
   private FindRoomByName(name: string): Room | undefined {
@@ -246,7 +309,7 @@ export class Rooms {
     });
   }
 
-  private FindRoomById(id: uuid): Room | null {
+  public FindRoomById(id: uuid): Room | null {
     return this.#rooms[id];
   }
 }

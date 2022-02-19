@@ -7,7 +7,7 @@ export const Set: Method = (
   saveOptions: ItemPayload | LocationPayload,
   user: User
 ): Result => {
-  if (!user.room) {
+  if (!user.roomId) {
     return {
       message: "User not in room",
     };
@@ -47,7 +47,14 @@ export const Set: Method = (
     }
   }
 
-  user.room.SaveData(user, saveOptions);
+  const room = global.rooms.FindRoomById(user.roomId);
+  if (room) {
+    room.SaveData(user, saveOptions);
+  } else {
+    return {
+      message: "Room not found",
+    };
+  }
 
   return {
     message: "Data saved",

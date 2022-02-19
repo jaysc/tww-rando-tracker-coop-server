@@ -12,11 +12,17 @@ export const Message: Method = (
     return { message: "No message" };
   }
 
-  if (!user.room) {
+  if (!user.roomId) {
     return { message: "User not in room" };
   }
 
   //send a message
-  user.room?.SendMessage({ message: messageData.message }, user);
-  return { message: "Message Sent" };
+  const room = global.rooms.FindRoomById(user.roomId);
+  if (room) {
+    room.SendMessage({ message: messageData.message }, user);
+    return { message: "Message Sent" };
+  } else {
+    user.leaveRoom();
+    return { message: "Room not found" };
+  }
 };

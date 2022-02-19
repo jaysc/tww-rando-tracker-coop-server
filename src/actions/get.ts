@@ -6,7 +6,7 @@ export const Get: Method = (
   getOptions: ItemPayload | LocationPayload,
   user: User
 ) => {
-  if (!user.room) {
+  if (!user.roomId) {
     return {
       message: "User not in room",
     };
@@ -20,7 +20,7 @@ export const Get: Method = (
       message: "Type invalid",
     };
   }
-  let getResult = user.room.GetData(getOptions);
+  let getResult = global.rooms.FindRoomById(user.roomId);
 
   if (getResult) {
     return {

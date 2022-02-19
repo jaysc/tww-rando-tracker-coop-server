@@ -3,7 +3,7 @@ import {
   JoinRoom,
   LeaveRoom,
   Message,
-  Save,
+  Set,
   Get,
   Method,
 } from "./index.js";
@@ -21,7 +21,7 @@ export const Route = (method?: string): Method | null => {
     case Actions.Message:
       return Message;
     case Actions.Set:
-      return Save;
+      return Set;
     case Actions.Get:
       return Get;
     default:

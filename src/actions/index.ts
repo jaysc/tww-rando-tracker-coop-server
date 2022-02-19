@@ -31,6 +31,6 @@ export interface Method {
 export { JoinRoom } from "./joinRoom.js";
 export { LeaveRoom } from "./leaveRoom.js";
 export { Message } from "./message.js";
-export { Set as Save } from "./set.js";
+export { Set } from "./set.js";
 export { Get } from "./get.js";
 export { Route } from "./route.js";

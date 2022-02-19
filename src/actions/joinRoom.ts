@@ -20,8 +20,8 @@ export const JoinRoom: Method = (
       message: "Joined room",
       data: {
         id: room.id,
-        items: room.GetItemStore(),
-        locations: room.GetLocationStore(),
+        items: room.ItemStore,
+        locations: room.LocationStore,
       },
     };
   } else {

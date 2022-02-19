@@ -3,7 +3,7 @@ import * as _ from "lodash-es";
 
 export const DebugSend = () => {
   if (global.debugClient) {
-    const rooms = global.rooms.GetRooms();
+    const rooms = global.rooms.Rooms;
     let debugResult = {};
     for (const roomId in rooms) {
       const room = rooms[roomId as uuid];

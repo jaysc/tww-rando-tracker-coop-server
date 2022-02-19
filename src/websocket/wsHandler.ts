@@ -21,7 +21,7 @@ export const WsHandler =
 
     con.socket.on("close", () => {
       if (con.user) {
-        con.user.leaveRoom();
+        global.rooms.UserDisconnect(con.user);
         global.connections.delete(con.user.id);
       }
     });

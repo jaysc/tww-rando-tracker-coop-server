@@ -1,6 +1,8 @@
 import Fastify from "fastify";
 import * as _ from "lodash-es";
 import * as fs from "fs";
+import dotenv from "dotenv";
+dotenv.config();
 
 import fws, { SocketStream } from "fastify-websocket";
 import fc from "fastify-cookie";
@@ -49,7 +51,7 @@ server.route({
   },
 });
 
-server.listen(3001, (err, address) => {
+server.listen(process.env.PORT, (err, address) => {
   if (err) {
     console.error(err);
     process.exit(1);
