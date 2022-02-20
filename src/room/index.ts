@@ -240,7 +240,7 @@ export class Room {
     return (
       this.#userIds.length == 0 ||
       differenceInMinutes(new Date(), this.lastAction) >
-        parseInt(process.env.ROOM_LIFETIME_MINUTES)
+        (parseInt(process.env.ROOM_LIFETIME_MINUTES) ?? 30)
     );
   }
 }
@@ -251,7 +251,7 @@ export class Rooms {
   constructor() {
     setInterval(
       this.DeleteInvalidRooms.bind(this),
-      parseInt(process.env.CHECK_INTERVAL)
+      parseInt(process.env.CHECK_INTERVAL) ?? 30
     );
   }
 
