@@ -49,8 +49,9 @@
 
             connectWs = () => {
                 let websocketUrl = document.URL;
+
                 websocketUrl = websocketUrl.replace('http://', 'ws://')
-                websocketUrl = websocketUrl.replace('https://', 'ws://')
+                websocketUrl = websocketUrl.replace('https://', 'wss://')
                 websocketUrl = new URL('ws', websocketUrl).href;
 
                 this.websocket = new WebSocket(websocketUrl, "protocolOne");
