@@ -7,11 +7,12 @@ dotenv.config();
 import fws, { SocketStream } from "fastify-websocket";
 import fc from "fastify-cookie";
 import { User } from "./user/index.js";
-import { Rooms, uuid } from "./room/index.js";
+import { uuid } from "./room/index.js";
 import { WsHandler } from "./websocket/wsHandler.js";
 import path, { join } from "path";
 import { fileURLToPath } from "url";
 import { DebugSend } from "./websocket/debugSend.js";
+import { Rooms } from "./room/rooms.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
