@@ -1,6 +1,6 @@
 import * as _ from "lodash-es";
 
-import { Room, RoomOptions, uuid } from ".";
+import { Room, RoomOptions, uuid } from "./index.js";
 import { User } from "../user";
 import { DebugSend } from "../websocket/debugSend";
 
@@ -8,9 +8,7 @@ export class Rooms {
   #rooms: { [RoomId: uuid]: Room } = {};
   #cleanupInterval?: NodeJS.Timer;
 
-  constructor() {
-    this.SetupCleanup();
-  }
+  constructor() {}
 
   private SetupCleanup() {
     if (!this.#cleanupInterval) {
