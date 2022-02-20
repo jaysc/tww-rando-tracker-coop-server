@@ -45,11 +45,15 @@ server.route({
   url: "/ws",
   wsHandler: WsHandler(server),
   handler: (req, reply) => {
-    const file = join(__dirname, "view/ws.html");
-
-    const stream = fs.createReadStream(file);
-    reply.type("text/html").send(stream);
+    reply.send();
   },
+});
+
+server.get("/debug", (request, reply) => {
+  const file = join(__dirname, "view/debug.html");
+
+  const stream = fs.createReadStream(file);
+  reply.type("text/html").send(stream);
 });
 
 server.get("/", (request, reply) => {
