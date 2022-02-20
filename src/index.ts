@@ -9,11 +9,17 @@ import fc from "fastify-cookie";
 import { User } from "./user/index.js";
 import { Rooms, uuid } from "./room/index.js";
 import { WsHandler } from "./websocket/wsHandler.js";
-import path, { join } from "path/win32";
+import path, { join } from "path";
 import { fileURLToPath } from "url";
 import { DebugSend } from "./websocket/debugSend.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+fs.readdir(__dirname, (err, files) => {
+  files.forEach((file) => {
+    console.log(file);
+  });
+});
 
 const server = Fastify({
   logger: true,
