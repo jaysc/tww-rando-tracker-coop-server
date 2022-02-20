@@ -10,6 +10,7 @@
     "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"npm run dev:start\"",
     "dev:start": "npm run view && node \"./dist/index.js\"",
     "view": "cp -r ./src/view/ ./dist/",
+    "postinstall": "npm run build",
     "start": "node dist/index.js",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
