@@ -2,7 +2,7 @@ import * as _ from "lodash-es";
 
 import { Room, RoomOptions, uuid } from "./index.js";
 import { User } from "../user";
-import { DebugSend } from "../websocket/debugSend";
+import { DebugSend } from "../websocket/debugSend.js";
 
 export class Rooms {
   #rooms: { [RoomId: uuid]: Room } = {};
