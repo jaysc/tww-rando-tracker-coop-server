@@ -46,15 +46,19 @@ server.route({
   url: "/ws",
   wsHandler: WsHandler(server),
   handler: (req, reply) => {
-    reply.send();
+    reply.status(404).send();
   },
 });
 
 server.get("/debug", (request, reply) => {
-  const file = join(__dirname, "view/debug.html");
+  if (request.cookies.userId == process.env.ADMIN_ID) {
+    const file = join(__dirname, "view/debug.html");
 
-  const stream = fs.createReadStream(file);
-  reply.type("text/html").send(stream);
+    const stream = fs.createReadStream(file);
+    reply.type("text/html").send(stream);
+  } else {
+    reply.status(404).send();
+  }
 });
 
 server.get("/", (request, reply) => {

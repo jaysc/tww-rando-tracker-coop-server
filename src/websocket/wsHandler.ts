@@ -36,4 +36,5 @@ export const WsHandler =
     };
 
     con.socket.send(JSON.stringify(response));
+    DebugSend();
   };
