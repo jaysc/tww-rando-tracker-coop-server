@@ -15,12 +15,6 @@ import { DebugSend } from "./websocket/debugSend.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-fs.readdir(__dirname, (err, files) => {
-  files.forEach((file) => {
-    console.log(file);
-  });
-});
-
 const server = Fastify({
   logger: true,
 });
