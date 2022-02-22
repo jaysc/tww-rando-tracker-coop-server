@@ -30,12 +30,6 @@ export class Rooms {
   private DeleteInvalidRooms() {
     console.log("Checking room");
 
-    if (_.size(this.#rooms) == 0) {
-      console.log("Stopping cleanup interval");
-      this.RemoveSetupCleanup();
-      return;
-    }
-
     const roomsToDelete = [];
     for (const roomId in this.#rooms) {
       const room = this.#rooms[roomId as uuid];
@@ -47,6 +41,11 @@ export class Rooms {
     for (const roomId of roomsToDelete) {
       console.log("Removing room: ", roomId);
       this.DeleteRoom(roomId as uuid);
+    }
+
+    if (_.size(this.#rooms) == 0) {
+      console.log("Stopping cleanup interval");
+      this.RemoveSetupCleanup();
     }
 
     DebugSend();
