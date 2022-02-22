@@ -26,7 +26,7 @@ export const WsHandler =
       if (global.connections.size == 0) {
         clearInterval(global.heartBeat);
       }
-    }, 30000);
+    }, parseInt(process.env.PING_INTERVAL) ?? 30000);
 
     //I believe fastify-websocket only emits 'message' and 'close'. Need to examine other ways to handle this, potentially manually
     con.socket.on("message", OnMessage(server, con, request));
