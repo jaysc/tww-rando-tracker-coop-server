@@ -12,6 +12,7 @@ declare global {
       ADMIN_ID: string;
       ROOM_LIFETIME_MINUTES: string;
       CHECK_INTERVAL: string;
+      PING_INTERVAL: string;
     }
   }
 }
