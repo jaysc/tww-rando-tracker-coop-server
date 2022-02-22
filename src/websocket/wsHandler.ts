@@ -16,6 +16,17 @@ export const WsHandler =
 
       global.connections.set(con.user.id, con);
     }
+    
+    global.heartBeat = setInterval(() => {
+      global.connections.forEach((con) => {
+        if (con.isAlive === false) return con.socket.terminate();
+        con.isAlive = false;
+        con.socket.send("PING");
+      });
+      if (global.connections.size == 0) {
+        clearInterval(global.heartBeat);
+      }
+    }, 30000);
 
     //I believe fastify-websocket only emits 'message' and 'close'. Need to examine other ways to handle this, potentially manually
     con.socket.on("message", OnMessage(server, con, request));
@@ -25,6 +36,10 @@ export const WsHandler =
         global.rooms.UserDisconnect(con.user);
         global.connections.delete(con.user.id);
         DebugSend();
+      }
+
+      if (global.connections.size == 0) {
+        clearInterval(global.heartBeat);
       }
     });
 

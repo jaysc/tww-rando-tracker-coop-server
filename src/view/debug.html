@@ -58,6 +58,11 @@
 
                 this.websocket.onmessage = function (event) {
                     console.log("Received a message client")
+                    if (event.data === "PING")
+                    {
+                        this.websocket.send("PONG");
+                        return;
+                    }
                     this.setData(event.data)
                 }.bind(this);
 

@@ -113,8 +113,10 @@ export class Room {
       }
       return temp;
     });
-
-    this.lastAction = new Date();
+    
+    if (userRemoved) {
+      this.lastAction = new Date();
+    }
 
     return userRemoved;
   }

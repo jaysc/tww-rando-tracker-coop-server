@@ -36,6 +36,7 @@ server.get("/ping", async (request, reply) => {
 export type connection = SocketStream & {
   user?: User;
   roomId?: string;
+  isAlive?: boolean;
 };
 
 global.rooms = new Rooms();

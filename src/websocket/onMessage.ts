@@ -9,10 +9,16 @@ import { Events, Result } from "../actions/index.js";
 export const OnMessage =
   (server: FastifyInstance, con: connection, request: FastifyRequest) =>
   (message: RawData) => {
+    const messageString = message.toString();
+    if (messageString === "PONG") {
+      con.isAlive = true;
+      return;
+    }
+
     try {
       if (
         request.cookies.userId == process.env.ADMIN_ID &&
-        _.get(JSON.parse(message.toString()), "debug")
+        _.get(JSON.parse(messageString), "debug")
       ) {
         global.debugClient = con;
         console.log("Set debug client");
