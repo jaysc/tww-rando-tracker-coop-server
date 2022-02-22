@@ -234,10 +234,10 @@ export class Room {
   }
 
   public FlagDelete() {
-    // Delete room if empty
+    // Delete room if empty AND
     // Delete room if last action is older than 30 minutes
     return (
-      this.#userIds.length == 0 ||
+      this.#userIds.length == 0 &&
       differenceInMinutes(new Date(), this.lastAction) >
         (parseInt(process.env.ROOM_LIFETIME_MINUTES) ?? 30)
     );
