@@ -11,6 +11,7 @@ export const WsHandler =
     if (!con.user) {
       const userId = request.cookies.userId;
       con.user = new User(userId);
+      con.isAlive = true;
 
       global.connections.set(con.user.id, con);
     }
