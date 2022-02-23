@@ -5,7 +5,7 @@ declare global {
   var rooms: Rooms;
   var connections: Map<string, connection>;
   var debugClient: connection | null;
-  var heartBeat: NodeJS.Timer;
+  var heartBeat: NodeJS.Timer | null;
   namespace NodeJS {
     interface ProcessEnv {
       PORT: string;

@@ -17,16 +17,19 @@ export const WsHandler =
       global.connections.set(con.user.id, con);
     }
     
-    global.heartBeat = setInterval(() => {
-      global.connections.forEach((con) => {
-        if (con.isAlive === false) return con.socket.terminate();
-        con.isAlive = false;
-        con.socket.send("PING");
-      });
-      if (global.connections.size == 0) {
-        clearInterval(global.heartBeat);
-      }
-    }, parseInt(process.env.PING_INTERVAL) ?? 30000);
+    if (!global.heartBeat) {
+      global.heartBeat = setInterval(() => {
+        global.connections.forEach((con) => {
+          if (con.isAlive === false) return con.socket.terminate();
+          con.isAlive = false;
+          con.socket.send("PING");
+        });
+        if (global.connections.size == 0) {
+          clearInterval(global.heartBeat!);
+          global.heartBeat = null;
+        }
+      }, parseInt(process.env.PING_INTERVAL) ?? 30000);
+    }
 
     //I believe fastify-websocket only emits 'message' and 'close'. Need to examine other ways to handle this, potentially manually
     con.socket.on("message", OnMessage(server, con, request));
@@ -38,8 +41,9 @@ export const WsHandler =
         DebugSend();
       }
 
-      if (global.connections.size == 0) {
+      if (global.connections.size == 0 && global.heartBeat) {
         clearInterval(global.heartBeat);
+        global.heartBeat = null;
       }
     });
 
