@@ -9,17 +9,19 @@ export const WsHandler =
   (server: FastifyInstance) => (con: connection, request: FastifyRequest) => {
     //'Connection' event
     if (!con.user) {
-      //todo Retrieve existing user here from cookie (or maybe session id)
       const userId = request.cookies.userId;
       con.user = new User(userId);
-      //todo Send client id back to client and store via cookie/local storage
 
       global.connections.set(con.user.id, con);
     }
-    
+
     global.heartBeat = setInterval(() => {
       global.connections.forEach((con) => {
-        if (con.isAlive === false) return con.socket.terminate();
+        if (con.isAlive === false) {
+          console.log("Terminating: " + con.user?.id);
+          con.socket.terminate();
+          return;
+        }
         con.isAlive = false;
         con.socket.send("PING");
       });

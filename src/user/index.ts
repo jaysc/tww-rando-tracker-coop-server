@@ -11,8 +11,6 @@ export class User {
       var pattern =
         /^[0-9a-f]{8}-[0-9a-f]{4}-[1-5][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
-      console.log(userID);
-      console.log(pattern.test(userID));
       if (!pattern.test(userID)) {
         userID = "";
       }
