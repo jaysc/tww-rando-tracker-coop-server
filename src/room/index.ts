@@ -1,6 +1,6 @@
 import * as _ from "lodash-es";
 import { v4 as uuidv4 } from "uuid";
-import { User } from "../user";
+import { User } from "../user/index.js";
 import { Events, Result } from "../actions/index.js";
 import { createStore, Store, Schema } from "tinybase";
 import { differenceInMinutes } from "date-fns";
@@ -12,7 +12,17 @@ export interface RoomOptions {
   password?: string;
   perma?: string;
   mode?: Mode;
+  initialData?: InitialData;
 }
+
+export type InitialData = {
+  trackerState: {
+    entrances: object;
+    items: object;
+    itemsForLocations: object;
+    locationsChecked: object;
+  };
+};
 
 export enum SaveDataType {
   ITEM = "ITEM",
@@ -54,19 +64,28 @@ export class Room {
   public name: string;
   public createdDate: Date = new Date();
   public lastAction: Date = new Date();
+  public creatorId;
 
-  constructor({ name, password, perma, mode }: RoomOptions) {
+  constructor(
+    { name, password, perma, mode, initialData }: RoomOptions,
+    user?: User
+  ) {
     this.id = uuidv4() as uuid;
     this.#password = password;
     this.#mode = mode ?? Mode.ITEMSYNC;
 
     this.name = name;
     this.perma = perma;
+    this.creatorId = user?.id;
 
     this.#itemStore.setTables({
       items: {},
       locations: {},
     });
+
+    if (initialData) {
+      this.LoadInitialData(initialData, user);
+    }
   }
 
   get ItemStore() {
@@ -74,6 +93,53 @@ export class Room {
   }
   get LocationStore() {
     return this.#locationStore.getTables();
+  }
+
+  public LoadInitialData(initialData: InitialData, user?: User) {
+    const roomUser = user ?? new User(this.id);
+
+    const locationForItem = {};
+    _.forEach(
+      initialData.trackerState.itemsForLocations,
+      (detailedLocations, generalLocation) => {
+        _.forEach(detailedLocations, (item: string, detailedLocation) => {
+          _.set(locationForItem, [item], { detailedLocation, generalLocation });
+        });
+      }
+    );
+
+    _.forEach(
+      initialData.trackerState.locationsChecked,
+      (detailedLocations: object, generalLocation) => {
+        _.forEach(detailedLocations, (value, detailedLocation) => {
+          console.log(value);
+          if (!!value) {
+            this.SaveLocation(roomUser, {
+              type: SaveDataType.LOCATION,
+              detailedLocation,
+              generalLocation,
+              isChecked: true,
+              itemName: _.get(initialData.trackerState.itemsForLocations, [
+                generalLocation,
+                detailedLocation,
+              ]),
+            });
+          }
+        });
+      }
+    );
+
+    _.forEach(initialData.trackerState.items, (value, item) => {
+      if (!!value) {
+        this.SaveItem(roomUser, {
+          type: SaveDataType.ITEM,
+          itemName: item,
+          count: value,
+          generalLocation: _.get(locationForItem, [item, "generalLocation"]),
+          detailedLocation: _.get(locationForItem, [item, "detailedLocation"]),
+        });
+      }
+    });
   }
 
   public HasPassword = () => !_.isEmpty(this.#password);
@@ -113,7 +179,7 @@ export class Room {
       }
       return temp;
     });
-    
+
     if (userRemoved) {
       this.lastAction = new Date();
     }
