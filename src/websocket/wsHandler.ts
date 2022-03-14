@@ -12,11 +12,17 @@ export const WsHandler =
       //todo Retrieve existing user here from cookie (or maybe session id)
       const userId = request.cookies.userId;
       con.user = new User(userId);
-      //todo Send client id back to client and store via cookie/local storage
 
       global.connections.set(con.user.id, con);
     }
-    
+
+    const handleHearbeat = () => {
+      if (global.connections.size == 0 && global.heartBeat) {
+        clearInterval(global.heartBeat);
+        global.heartBeat = null;
+      }
+    };
+
     if (!global.heartBeat) {
       global.heartBeat = setInterval(() => {
         global.connections.forEach((con) => {
@@ -24,10 +30,7 @@ export const WsHandler =
           con.isAlive = false;
           con.socket.send("PING");
         });
-        if (global.connections.size == 0) {
-          clearInterval(global.heartBeat!);
-          global.heartBeat = null;
-        }
+        handleHearbeat();
       }, parseInt(process.env.PING_INTERVAL) ?? 30000);
     }
 
@@ -41,10 +44,7 @@ export const WsHandler =
         DebugSend();
       }
 
-      if (global.connections.size == 0 && global.heartBeat) {
-        clearInterval(global.heartBeat);
-        global.heartBeat = null;
-      }
+      handleHearbeat();
     });
 
     const response: Result = {

@@ -59,8 +59,8 @@ export class Rooms {
     return this.#rooms;
   }
 
-  private CreateRoom(roomOptions: RoomOptions) {
-    const room = new Room(roomOptions);
+  private CreateRoom(roomOptions: RoomOptions, user?: User) {
+    const room = new Room(roomOptions, user);
     this.#rooms[room.id] = room;
 
     this.SetupCleanup();
@@ -72,7 +72,7 @@ export class Rooms {
     let room = this.FindRoomByName(roomOptions.name);
 
     if (room == null) {
-      room = this.CreateRoom(roomOptions);
+      room = this.CreateRoom(roomOptions, user);
       room.AddUser(user);
     } else if (room.HasPassword()) {
       if (room.PasswordAccept(roomOptions.password)) {
