@@ -12,6 +12,7 @@ export const WsHandler =
       //todo Retrieve existing user here from cookie (or maybe session id)
       const userId = request.cookies.userId;
       con.user = new User(userId);
+      con.isAlive = true;
 
       global.connections.set(con.user.id, con);
     }
