@@ -13,6 +13,7 @@ import path, { join } from "path";
 import { fileURLToPath } from "url";
 import { DebugSend } from "./websocket/debugSend.js";
 import { Rooms } from "./room/rooms.js";
+import { ItemMessage, ItemMessagePayload } from "./route/itemMessage.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
@@ -78,7 +79,30 @@ server.get("/delete/:roomId", (request, reply) => {
   reply.status(200).send();
 });
 
-server.listen(process.env.PORT, (err, address) => {
+server.put("/recieved", (request, reply) => {
+  let payload: ItemMessagePayload | null = null;
+  try {
+    payload = JSON.parse(request?.body as string);
+  } catch (e) {
+    console.error(e);
+    reply.code(500);
+  }
+
+  if (payload) {
+    const result = ItemMessage(payload);
+    if (result.error) {
+      reply.code(500);
+      reply.send(result);
+    }
+    reply.code(200);
+  } else {
+    reply.code(500);
+  }
+
+  reply.send();
+});
+
+server.listen(process.env.PORT, "0.0.0.0", (err, address) => {
   if (err) {
     console.error(err);
     process.exit(1);

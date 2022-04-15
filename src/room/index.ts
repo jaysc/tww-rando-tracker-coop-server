@@ -6,6 +6,7 @@ import { createStore, Store, Schema } from "tinybase";
 import { differenceInMinutes } from "date-fns";
 
 export type uuid = string & { readonly _: unique symbol };
+export { Rooms } from "./rooms.js";
 
 export interface RoomOptions {
   name: string;
@@ -48,8 +49,9 @@ export type LocationPayload = {
 };
 
 export enum Mode {
-  ITEMSYNC = "ITEMSYNC",
-  COOP = "COOP",
+  ITEMSYNC = "ITEMSYNC", //Single world synced
+  COOP = "COOP", //Single world unsynced
+  MULTIWORLD = "MULTIWORLD", //Multiple worlds. No need to save item or location info.
 }
 
 export class Room {

@@ -100,7 +100,7 @@ export class Rooms {
     }
   }
 
-  private FindRoomByName(name: string): Room | undefined {
+  public FindRoomByName(name: string): Room | undefined {
     return _.find(this.#rooms, (room) => {
       return room.name === name;
     });

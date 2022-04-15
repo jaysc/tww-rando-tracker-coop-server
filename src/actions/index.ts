@@ -14,6 +14,7 @@ export enum Events {
   OnConnect = "onConnect",
   DataSaved = "dataSaved",
   Response = "response",
+  ItemMessage = "itemMessage",
 }
 
 export type Result = {
