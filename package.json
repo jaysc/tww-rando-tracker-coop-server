@@ -6,7 +6,7 @@
   "type": "module",
   "node": "^12.20.0 || ^14.13.1 || >=16.0.0",
   "scripts": {
-    "build": "tsc -p tsconfig.json",
+    "build": "tsc -p tsconfig.json && npm run view",
     "dev": "tsc-watch --noClear -p ./tsconfig.json --onSuccess \"npm run dev:start\"",
     "dev:start": "npm run view && node \"./dist/index.js\"",
     "view": "cp -r ./src/view/ ./dist/",

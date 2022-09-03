@@ -1,4 +1,4 @@
-import { Events } from "../actions";
+import { Events } from "../actions/index.js";
 
 export interface ItemMessagePayload {
   itemId: number;
