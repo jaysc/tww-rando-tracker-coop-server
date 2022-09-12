@@ -1,7 +1,7 @@
 import { Events } from "../actions/index.js";
 
 export interface ItemMessagePayload {
-  itemId: number;
+  itemId: string;
   checkName: string;
   playerName: string;
   gameRoom: string;
@@ -16,11 +16,6 @@ const ItemMessage = ({
   if (!itemId) {
     return {
       error: "Missing itemId",
-    };
-  }
-  if (!checkName) {
-    return {
-      error: "Missing checkName",
     };
   }
   if (!playerName) {

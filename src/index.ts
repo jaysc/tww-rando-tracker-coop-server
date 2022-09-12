@@ -4,8 +4,8 @@ import * as fs from "fs";
 import dotenv from "dotenv";
 dotenv.config();
 
-import fws, { SocketStream } from "fastify-websocket";
-import fc from "fastify-cookie";
+import fws, { SocketStream } from "@fastify/websocket";
+import fc from "@fastify/cookie";
 import { User } from "./user/index.js";
 import { uuid } from "./room/index.js";
 import { WsHandler } from "./websocket/wsHandler.js";
@@ -43,13 +43,15 @@ export type connection = SocketStream & {
 global.rooms = new Rooms();
 global.connections = new Map<string, connection>();
 
-server.route({
-  method: "GET",
-  url: "/ws",
-  wsHandler: WsHandler(server),
-  handler: (req, reply) => {
-    reply.status(404).send();
-  },
+server.register(async () => {
+  server.route({
+    method: "GET",
+    url: "/ws",
+    wsHandler: WsHandler(server),
+    handler: (req, reply) => {
+      reply.status(404).send();
+    },
+  });
 });
 
 server.get("/debug", (request, reply) => {
@@ -80,13 +82,8 @@ server.get("/delete/:roomId", (request, reply) => {
 });
 
 server.put("/recieved", (request, reply) => {
-  let payload: ItemMessagePayload | null = null;
-  try {
-    payload = JSON.parse(request?.body as string);
-  } catch (e) {
-    console.error(e);
-    reply.code(500);
-  }
+  console.log(request.body);
+  let payload: ItemMessagePayload | null = request?.body as ItemMessagePayload;
 
   if (payload) {
     const result = ItemMessage(payload);
@@ -102,11 +99,14 @@ server.put("/recieved", (request, reply) => {
   reply.send();
 });
 
-server.listen(process.env.PORT, "0.0.0.0", (err, address) => {
-  if (err) {
-    console.error(err);
-    process.exit(1);
-  }
+server.listen(
+  { port: parseInt(process.env.PORT), host: "0.0.0.0" },
+  (err, address) => {
+    if (err) {
+      console.error(err);
+      process.exit(1);
+    }
 
-  console.log(`Server listening at ${address}`);
-});
+    console.log(`Server listening at ${address}`);
+  }
+);
