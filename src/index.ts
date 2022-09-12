@@ -81,7 +81,7 @@ server.get("/delete/:roomId", (request, reply) => {
   reply.status(200).send();
 });
 
-server.put("/recieved", (request, reply) => {
+server.put("/received", (request, reply) => {
   console.log(request.body);
   let payload: ItemMessagePayload | null = request?.body as ItemMessagePayload;
 
