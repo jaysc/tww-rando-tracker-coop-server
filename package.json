@@ -11,28 +11,35 @@
     "dev:start": "npm run view && node \"./dist/index.js\"",
     "view": "cp -r ./src/view/ ./dist/",
     "start": "node dist/index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "lint": "eslint ./src/**"
   },
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "@fastify/cookie": "^8.1.0",
-    "@fastify/websocket": "^7.0.1",
-    "date-fns": "^2.29.2",
-    "fastify": "^4.5.3",
+    "@fastify/cookie": "^8.3.0",
+    "@fastify/websocket": "^7.1.0",
+    "date-fns": "^2.29.3",
+    "fastify": "^4.9.2",
     "lodash-es": "^4.17.21",
-    "tinybase": "^1.3.6",
+    "tinybase": "^2.1.0",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
     "@types/date-fns": "^2.6.0",
     "@types/lodash-es": "^4.17.6",
-    "@types/node": "^18.7.16",
+    "@types/node": "^18.11.3",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
-    "dotenv": "^16.0.2",
-    "nodemon": "^2.0.19",
+    "@typescript-eslint/eslint-plugin": "^5.40.1",
+    "dotenv": "^16.0.3",
+    "eslint": "^8.25.0",
+    "eslint-config-standard-with-typescript": "^23.0.0",
+    "eslint-plugin-import": "^2.26.0",
+    "eslint-plugin-n": "^15.3.0",
+    "eslint-plugin-promise": "^6.1.1",
+    "nodemon": "^2.0.20",
     "tsc-watch": "^5.0.3",
-    "typescript": "^4.8.3"
+    "typescript": "^4.8.4"
   }
 }

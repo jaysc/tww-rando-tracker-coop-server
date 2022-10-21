@@ -58,6 +58,7 @@ export class Room {
   #password?: string;
   #itemStore: Store = createStore();
   #locationStore: Store = createStore();
+  #itemsForLocations: Store = createStore();
   #mode: Mode;
   #userIds: Array<string> = [];
 
@@ -96,6 +97,9 @@ export class Room {
   get LocationStore() {
     return this.#locationStore.getTables();
   }
+  get ItemsForLocation() {
+    return this.#itemsForLocations.getTables();
+  }
 
   public LoadInitialData(initialData: InitialData, user?: User) {
     const roomUser = user ?? new User(this.id);
@@ -104,7 +108,13 @@ export class Room {
     _.forEach(
       initialData.trackerState.itemsForLocations,
       (detailedLocations, generalLocation) => {
-        _.forEach(detailedLocations, (item: string, detailedLocation) => {
+        _.forEach(detailedLocations, (item: string, detailedLocation: string) => {
+          this.SaveItemForLocation(roomUser, {
+            type: SaveDataType.ITEM,
+            itemName: item,
+            generalLocation,
+            detailedLocation
+          })
           _.set(locationForItem, [item], { detailedLocation, generalLocation });
         });
       }
@@ -137,8 +147,6 @@ export class Room {
           type: SaveDataType.ITEM,
           itemName: item,
           count: value,
-          generalLocation: _.get(locationForItem, [item, "generalLocation"]),
-          detailedLocation: _.get(locationForItem, [item, "detailedLocation"]),
         });
       }
     });
@@ -257,6 +265,21 @@ export class Room {
     return this.#mode === Mode.ITEMSYNC ? this.id : user.id;
   }
 
+  private SaveItemForLocation(user: User, { itemName, generalLocation, detailedLocation, sphere }: ItemPayload) {
+    const dataToSave = _.omitBy(
+      {
+        itemName: itemName,
+      },
+      _.isNil
+    );
+
+    this.#itemsForLocations.setPartialRow(
+      `${generalLocation}#${detailedLocation}`,
+      this.SaveId(user),
+      dataToSave as {}
+    );
+  }
+
   private SaveItem(
     user: User,
     { itemName, count, generalLocation, detailedLocation, sphere }: ItemPayload
@@ -264,8 +287,6 @@ export class Room {
     const dataToSave = _.omitBy(
       {
         count: count ?? 0,
-        generalLocation: generalLocation,
-        detailedLocation: detailedLocation,
         sphere,
       },
       _.isNil
@@ -309,7 +330,7 @@ export class Room {
     return (
       this.#userIds.length == 0 &&
       differenceInMinutes(new Date(), this.lastAction) >
-        (parseInt(process.env.ROOM_LIFETIME_MINUTES) ?? 30)
+      (parseInt(process.env.ROOM_LIFETIME_MINUTES) ?? 30)
     );
   }
 }
