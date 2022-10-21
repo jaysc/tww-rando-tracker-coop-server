@@ -5,8 +5,8 @@ import {
   Message,
   Set,
   Get,
-  Method,
-} from "./index.js";
+  Method
+} from './index.js';
 
 export const Route = (method?: string): Method | null => {
   if (method == null) {

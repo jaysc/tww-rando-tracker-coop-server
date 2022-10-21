@@ -17,7 +17,7 @@ export const OnMessage =
 
       try {
         if (
-          request.cookies.userId == process.env.ADMIN_ID &&
+          request.cookies.userId === process.env.ADMIN_ID &&
         _.get(JSON.parse(messageString), 'debug')
         ) {
           global.debugClient = con;
@@ -44,7 +44,7 @@ export const OnMessage =
       DebugSend();
 
       const response: Result = {
-        event: result.event || Events.Response,
+        event: result.event ?? Events.Response,
         messageId,
         message: result.message,
         err: result.err,

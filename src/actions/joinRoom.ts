@@ -1,15 +1,15 @@
-import { Mode, RoomOptions } from "../room/index.js";
-import type { User } from "../user/index.js";
-import { Events, Method, Result } from "./index.js";
+import { RoomOptions } from '../room/index.js';
+import type { User } from '../user/index.js';
+import { Events, Method, Result } from './index.js';
 
 export const JoinRoom: Method = (
   roomOptions: RoomOptions,
   user: User
 ): Result => {
-  const { name, password, perma } = roomOptions;
+  const { name } = roomOptions;
 
   if (!name) {
-    return { err: Error("No room name specified") };
+    return { err: Error('No room name specified') };
   }
 
   const room = user.JoinRoom(roomOptions);
@@ -17,14 +17,14 @@ export const JoinRoom: Method = (
   if (room) {
     return {
       event: Events.JoinedRoom,
-      message: "Joined room",
+      message: 'Joined room',
       data: {
         id: room.id,
         items: room.ItemStore,
-        locations: room.LocationStore,
-      },
+        locations: room.LocationStore
+      }
     };
   } else {
-    return { message: "Failed to join room" };
+    return { message: 'Failed to join room' };
   }
 };
