@@ -1,43 +1,44 @@
-import Fastify from "fastify";
-import * as _ from "lodash-es";
-import * as fs from "fs";
-import dotenv from "dotenv";
+/* eslint-disable @typescript-eslint/no-floating-promises */
+import Fastify from 'fastify';
+import * as fs from 'fs';
+import dotenv from 'dotenv';
+
+import fws, { SocketStream } from '@fastify/websocket';
+import fc from '@fastify/cookie';
+import { User } from './user/index.js';
+import { uuid } from './room/index.js';
+import { WsHandler } from './websocket/wsHandler.js';
+import path, { join } from 'path';
+import { fileURLToPath } from 'url';
+import { DebugSend } from './websocket/debugSend.js';
+import { Rooms } from './room/rooms.js';
+import { ItemMessage, ItemMessagePayload } from './route/itemMessage.js';
 dotenv.config();
 
-import fws, { SocketStream } from "@fastify/websocket";
-import fc from "@fastify/cookie";
-import { User } from "./user/index.js";
-import { uuid } from "./room/index.js";
-import { WsHandler } from "./websocket/wsHandler.js";
-import path, { join } from "path";
-import { fileURLToPath } from "url";
-import { DebugSend } from "./websocket/debugSend.js";
-import { Rooms } from "./room/rooms.js";
-import { ItemMessage, ItemMessagePayload } from "./route/itemMessage.js";
-
+// eslint-disable-next-line @typescript-eslint/naming-convention
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 const server = Fastify({
-  logger: true,
+  logger: true
 });
 server.register(fws, {
   options: {
-    clientTracking: true,
-  },
+    clientTracking: true
+  }
 });
 server.register(fc, {
-  secret: "secret",
+  secret: 'secret'
 });
 
-server.get("/ping", async (request, reply) => {
-  return "pong\n";
+server.get('/ping', async (request, reply) => {
+  return 'pong\n';
 });
 
-//Websocket stuff should be moved to it's own controller.
+// Websocket stuff should be moved to it's own controller.
 export type connection = SocketStream & {
-  user?: User;
-  roomId?: string;
-  isAlive?: boolean;
+  user?: User
+  roomId?: string
+  isAlive?: boolean
 };
 
 global.rooms = new Rooms();
@@ -45,34 +46,34 @@ global.connections = new Map<string, connection>();
 
 server.register(async () => {
   server.route({
-    method: "GET",
-    url: "/ws",
+    method: 'GET',
+    url: '/ws',
     wsHandler: WsHandler(server),
     handler: (req, reply) => {
       reply.status(404).send();
-    },
+    }
   });
 });
 
-server.get("/debug", (request, reply) => {
-  if (request.cookies.userId == process.env.ADMIN_ID) {
-    const file = join(__dirname, "view/debug.html");
+server.get('/debug', (request, reply) => {
+  if (request.cookies.userId === process.env.ADMIN_ID) {
+    const file = join(__dirname, 'view/debug.html');
 
     const stream = fs.createReadStream(file);
-    reply.type("text/html").send(stream);
+    reply.type('text/html').send(stream);
   } else {
     reply.status(404).send();
   }
 });
 
-server.get("/", (request, reply) => {
-  const file = join(__dirname, "view/index.html");
+server.get('/', (request, reply) => {
+  const file = join(__dirname, 'view/index.html');
   const stream = fs.createReadStream(file);
-  reply.type("text/html").send(stream);
+  reply.type('text/html').send(stream);
 });
 
-server.get("/delete/:roomId", (request, reply) => {
-  if (request.cookies.userId == process.env.ADMIN_ID) {
+server.get('/delete/:roomId', (request, reply) => {
+  if (request.cookies.userId === process.env.ADMIN_ID) {
     const { roomId } = request.params as { roomId: uuid };
     global.rooms.DeleteRoom(roomId);
     DebugSend();
@@ -81,9 +82,9 @@ server.get("/delete/:roomId", (request, reply) => {
   reply.status(200).send();
 });
 
-server.put("/received", (request, reply) => {
+server.put('/received', (request, reply) => {
   console.log(request.body);
-  let payload: ItemMessagePayload | null = request?.body as ItemMessagePayload;
+  const payload: ItemMessagePayload | null = request?.body as ItemMessagePayload;
 
   if (payload) {
     const result = ItemMessage(payload);
@@ -100,7 +101,7 @@ server.put("/received", (request, reply) => {
 });
 
 server.listen(
-  { port: parseInt(process.env.PORT), host: "0.0.0.0" },
+  { port: parseInt(process.env.PORT), host: '0.0.0.0' },
   (err, address) => {
     if (err) {
       console.error(err);
