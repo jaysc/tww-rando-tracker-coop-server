@@ -1,56 +1,64 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
-import type { RawData } from "ws";
-import { ParseData } from "./index.js";
-import type { connection } from "../index.js";
-import { DebugSend } from "./debugSend.js";
-import * as _ from "lodash-es";
-import { Events, Result } from "../actions/index.js";
+import type { FastifyInstance, FastifyRequest } from 'fastify';
+import type { RawData } from 'ws';
+import { ParseData } from './index.js';
+import type { connection } from '../index.js';
+import { DebugSend } from './debugSend.js';
+import * as _ from 'lodash-es';
+import { Events } from '../actions/index.js';
+
+export interface Response {
+  data?: object
+  error?: string
+  event: Events
+  message?: string
+  messageId?: string
+}
 
 export const OnMessage =
   (server: FastifyInstance, con: connection, request: FastifyRequest) =>
-  (message: RawData) => {
-    const messageString = message.toString();
-    if (messageString === "PONG") {
-      con.isAlive = true;
-      return;
-    }
-
-    try {
-      if (
-        request.cookies.userId == process.env.ADMIN_ID &&
-        _.get(JSON.parse(messageString), "debug")
-      ) {
-        global.debugClient = con;
-        console.log("Set debug client");
-        DebugSend();
+    (message: RawData) => {
+      const messageString = message.toString();
+      if (messageString === 'PONG') {
+        con.isAlive = true;
+        return;
       }
-    } catch {}
 
-    if (!con.user) {
-      console.error("Missing userId");
-      con.socket.close();
-      return;
-    }
+      try {
+        if (
+          request.cookies.userId === process.env.ADMIN_ID &&
+        _.get(JSON.parse(messageString), 'debug')
+        ) {
+          global.debugClient = con;
+          console.log('Set debug client');
+          DebugSend();
+        }
+      } catch {}
 
-    const { action, messageId } = ParseData(message, con.user) ?? {};
+      if (!con.user) {
+        console.error('Missing userId');
+        con.socket.close();
+        return;
+      }
 
-    if (action == null) {
-      //Not json, do nothing.
-      return;
-    }
+      const { action, messageId } = ParseData(message, con.user) ?? {};
 
-    const result = action.execute(server.websocketServer);
+      if (action == null) {
+      // Not json, do nothing.
+        return;
+      }
 
-    DebugSend();
+      const result = action.execute(server.websocketServer);
 
-    const response: Result = {
-      event: result.event || Events.Response,
-      messageId,
-      message: result.message,
-      err: result.err,
-      data: result.data,
+      DebugSend();
+
+      const response: Response = {
+        data: result.data,
+        error: result?.err?.message,
+        event: result.event ?? Events.Response,
+        message: result.message,
+        messageId
+      };
+
+      console.log(result);
+      con.socket.send(JSON.stringify(response));
     };
-
-    console.log(result);
-    con.socket.send(JSON.stringify(response));
-  };

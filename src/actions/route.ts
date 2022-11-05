@@ -1,12 +1,12 @@
 import {
   Actions,
+  Get,
   JoinRoom,
   LeaveRoom,
   Message,
-  Set,
-  Get,
   Method,
-} from "./index.js";
+  Set
+} from './index.js';
 
 export const Route = (method?: string): Method | null => {
   if (method == null) {

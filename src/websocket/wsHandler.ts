@@ -1,15 +1,15 @@
-import type { FastifyInstance, FastifyRequest } from "fastify";
-import { OnMessage } from "./onMessage.js";
-import type { connection } from "../index.js";
-import { User } from "../user/index.js";
-import { Events, Result } from "../actions/index.js";
-import { DebugSend } from "./debugSend.js";
+import type { FastifyInstance, FastifyRequest } from 'fastify';
+import { OnMessage } from './onMessage.js';
+import type { connection } from '../index.js';
+import { User } from '../user/index.js';
+import { Events, Result } from '../actions/index.js';
+import { DebugSend } from './debugSend.js';
 
 export const WsHandler =
   (server: FastifyInstance) => (con: connection, request: FastifyRequest) => {
-    //'Connection' event
+    // 'Connection' event
     if (!con.user) {
-      //todo Retrieve existing user here from cookie (or maybe session id)
+      // todo Retrieve existing user here from cookie (or maybe session id)
       const userId = request.cookies.userId;
       con.user = new User(userId);
       con.isAlive = true;
@@ -18,7 +18,7 @@ export const WsHandler =
     }
 
     const handleHearbeat = () => {
-      if (global.connections.size == 0 && global.heartBeat) {
+      if (global.connections.size === 0 && global.heartBeat) {
         clearInterval(global.heartBeat);
         global.heartBeat = null;
       }
@@ -29,16 +29,16 @@ export const WsHandler =
         global.connections.forEach((con) => {
           if (con.isAlive === false) return con.socket.terminate();
           con.isAlive = false;
-          con.socket.send("PING");
+          con.socket.send('PING');
         });
         handleHearbeat();
       }, parseInt(process.env.PING_INTERVAL) ?? 30000);
     }
 
-    //I believe fastify-websocket only emits 'message' and 'close'. Need to examine other ways to handle this, potentially manually
-    con.socket.on("message", OnMessage(server, con, request));
+    // I believe fastify-websocket only emits 'message' and 'close'. Need to examine other ways to handle this, potentially manually
+    con.socket.on('message', OnMessage(server, con, request));
 
-    con.socket.on("close", () => {
+    con.socket.on('close', () => {
       if (con.user) {
         global.rooms.UserDisconnect(con.user);
         global.connections.delete(con.user.id);
@@ -51,8 +51,8 @@ export const WsHandler =
     const response: Result = {
       event: Events.OnConnect,
       data: {
-        userId: con.user.id,
-      },
+        userId: con.user.id
+      }
     };
 
     con.socket.send(JSON.stringify(response));

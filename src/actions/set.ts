@@ -1,7 +1,6 @@
-import _ from "lodash";
-import { ItemPayload, LocationPayload, SaveDataType } from "../room/index.js";
-import type { User } from "../user/index.js";
-import type { Method, Result } from "./index.js";
+import { ItemPayload, LocationPayload, SaveDataType } from '../room/index.js';
+import type { User } from '../user/index.js';
+import type { Method, Result } from './index.js';
 
 export const Set: Method = (
   saveOptions: ItemPayload | LocationPayload,
@@ -9,16 +8,18 @@ export const Set: Method = (
 ): Result => {
   if (!user.roomId) {
     return {
-      message: "User not in room",
+      message: 'User not in room'
     };
   }
 
   if (
+    saveOptions.type !== SaveDataType.ENTRANCE &&
+    saveOptions.type !== SaveDataType.ISLANDS_FOR_CHARTS &&
     saveOptions.type !== SaveDataType.ITEM &&
     saveOptions.type !== SaveDataType.LOCATION
   ) {
     return {
-      message: "Type invalid",
+      message: 'Type invalid'
     };
   }
 
@@ -26,23 +27,23 @@ export const Set: Method = (
   if (saveOptions.type === SaveDataType.ITEM) {
     data = saveOptions as ItemPayload;
 
-    if (!!!data.itemName) {
+    if (!data.itemName) {
       return {
-        message: "Missing itemName",
+        message: 'Missing itemName'
       };
     }
   } else if (saveOptions.type === SaveDataType.LOCATION) {
     data = saveOptions as LocationPayload;
 
-    if (!!!data.generalLocation) {
+    if (!data.generalLocation) {
       return {
-        message: "Missing generalLocation",
+        message: 'Missing generalLocation'
       };
     }
 
-    if (!!!data.detailedLocation) {
+    if (!data.detailedLocation) {
       return {
-        message: "Missing detailedLocation",
+        message: 'Missing detailedLocation'
       };
     }
   }
@@ -52,11 +53,11 @@ export const Set: Method = (
     room.SaveData(user, saveOptions);
   } else {
     return {
-      message: "Room not found",
+      message: 'Room not found'
     };
   }
 
   return {
-    message: "Data saved",
+    message: 'Data saved'
   };
 };
