@@ -2,19 +2,19 @@ import type { WebSocketServer } from 'ws';
 import type { User } from '../user/index.js';
 
 export enum Actions {
+  Get = 'get',
   JoinRoom = 'joinRoom',
   LeaveRoom = 'leaveRoom',
   Message = 'message',
   Set = 'set',
-  Get = 'get',
 }
 
 export enum Events {
+  DataSaved = 'dataSaved',
+  ItemMessage = 'itemMessage',
   JoinedRoom = 'joinedRoom',
   OnConnect = 'onConnect',
-  DataSaved = 'dataSaved',
   Response = 'response',
-  ItemMessage = 'itemMessage',
 }
 
 export interface Result {
@@ -22,14 +22,15 @@ export interface Result {
   messageId?: string
   message?: string
   err?: Error
+  errorMessage?: string
   data?: object
 }
 
 export type Method = (data: any, user: User, ws: WebSocketServer) => Result;
 
+export { Get } from './get.js';
 export { JoinRoom } from './joinRoom.js';
 export { LeaveRoom } from './leaveRoom.js';
 export { Message } from './message.js';
-export { Set } from './set.js';
-export { Get } from './get.js';
 export { Route } from './route.js';
+export { Set } from './set.js';

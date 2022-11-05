@@ -11,7 +11,7 @@ export { Rooms } from './rooms.js';
 export interface RoomOptions {
   name: string
   password?: string
-  perma?: string
+  perma: string
   mode?: Mode
   initialData?: InitialData
 }
@@ -26,26 +26,51 @@ export interface InitialData {
 }
 
 export enum SaveDataType {
+  ENTRANCE = 'ENTRANCE',
+  ISLANDS_FOR_CHARTS = 'ISLANDS_FOR_CHARTS',
   ITEM = 'ITEM',
   LOCATION = 'LOCATION',
 }
 
-export interface ItemPayload {
+export interface EntrancePayload {
+  entranceName: string
+  exitName: string
   type: SaveDataType
+  useRoomId?: boolean
+}
+
+export interface IslandsForChartPayload {
+  chart: string
+  island: string
+  type: SaveDataType
+  useRoomId?: boolean
+}
+
+export interface ItemsForLocationsPayload {
   itemName: string
+  generalLocation: string
+  detailedLocation: string
+  useRoomId?: boolean
+}
+
+export interface ItemPayload {
   count?: number
-  generalLocation?: string
   detailedLocation?: string
+  generalLocation?: string
+  itemName: string
   sphere?: number
+  type: SaveDataType
+  useRoomId?: boolean
 }
 
 export interface LocationPayload {
-  type: SaveDataType
-  generalLocation: string
   detailedLocation: string
+  generalLocation: string
   isChecked?: boolean
   itemName?: string
   sphere?: number
+  type: SaveDataType
+  useRoomId?: boolean
 }
 
 export enum Mode {
@@ -56,13 +81,15 @@ export enum Mode {
 
 export class Room {
   #password?: string;
-  #itemStore: Store = createStore();
-  #locationStore: Store = createStore();
+  #entrances: Store = createStore();
+  #islandsForCharts: Store = createStore();
+  #itemsStore: Store = createStore();
+  #locationsCheckedStored: Store = createStore();
   #itemsForLocations: Store = createStore();
-  #mode: Mode;
   #userIds: string[] = [];
+  mode: Mode;
 
-  public perma?: string;
+  public perma: string;
   public id: uuid;
   public name: string;
   public createdDate: Date = new Date();
@@ -75,13 +102,13 @@ export class Room {
   ) {
     this.id = uuidv4() as uuid;
     this.#password = password;
-    this.#mode = mode ?? Mode.ITEMSYNC;
+    this.mode = mode ?? Mode.COOP;
 
     this.name = name;
     this.perma = perma;
     this.creatorId = user?.id;
 
-    this.#itemStore.setTables({
+    this.#itemsStore.setTables({
       items: {},
       locations: {}
     });
@@ -91,32 +118,42 @@ export class Room {
     }
   }
 
-  get ItemStore () {
-    return this.#itemStore.getTables();
+  get EntranceStore () {
+    return this.#entrances.getTables();
   }
 
-  get LocationStore () {
-    return this.#locationStore.getTables();
+  get IslandsForChartsStore () {
+    return this.#islandsForCharts.getTables();
   }
 
-  get ItemsForLocation () {
+  get ItemsStore () {
+    return this.#itemsStore.getTables();
+  }
+
+  get LocationsCheckedStore () {
+    return this.#locationsCheckedStored.getTables();
+  }
+
+  get ItemsForLocationStore () {
     return this.#itemsForLocations.getTables();
+  }
+
+  get globalUseRoomId () {
+    return this.mode === Mode.ITEMSYNC;
   }
 
   public LoadInitialData (initialData: InitialData, user?: User) {
     const roomUser = user ?? new User(this.id);
 
-    const locationForItem = {};
     _.forEach(
       initialData.trackerState.itemsForLocations,
       (detailedLocations, generalLocation) => {
         _.forEach(detailedLocations, (item: string, detailedLocation: string) => {
-          this.SaveItemForLocation(roomUser, {
+          this.SaveItemsForLocations(roomUser, {
             itemName: item,
             generalLocation,
             detailedLocation
           })
-          _.set(locationForItem, [item], { detailedLocation, generalLocation });
         });
       }
     );
@@ -159,12 +196,14 @@ export class Room {
     return {
       name: this.name,
       perma: this.perma,
-      mode: this.#mode,
       createdDate: this.createdDate,
       lastAction: this.lastAction,
       users: this.#userIds,
-      items: this.ItemStore,
-      locations: this.LocationStore
+      entrances: this.EntranceStore,
+      islandsForChart: this.IslandsForChartsStore,
+      items: this.ItemsStore,
+      itemsForLocation: this.ItemsForLocationStore,
+      locations: this.LocationsCheckedStore
     };
   }
 
@@ -214,7 +253,13 @@ export class Room {
     this.lastAction = new Date();
   }
 
-  public SaveData (user: User, saveOptions: ItemPayload | LocationPayload) {
+  public SaveData (user: User, saveOptions: EntrancePayload | IslandsForChartPayload | ItemPayload | LocationPayload) {
+    if (saveOptions.type === SaveDataType.ENTRANCE) {
+      this.SaveEntrance(user, saveOptions as EntrancePayload);
+    }
+    if (saveOptions.type === SaveDataType.ISLANDS_FOR_CHARTS) {
+      this.SaveIslandsForChart(user, saveOptions as IslandsForChartPayload);
+    }
     if (saveOptions.type === SaveDataType.ITEM) {
       this.SaveItem(user, saveOptions as ItemPayload);
     }
@@ -224,7 +269,7 @@ export class Room {
 
     const message: Result = {
       event: Events.DataSaved,
-      data: { ...saveOptions, userId: user.id }
+      data: { ...saveOptions, userId: saveOptions.useRoomId ? this.id : user.id }
     };
 
     this.SendMessage(message, user);
@@ -246,49 +291,91 @@ export class Room {
 
   private GetItem ({ itemName }: ItemPayload) {
     if (itemName) {
-      return this.#itemStore.getTable(itemName);
+      return this.#itemsStore.getTable(itemName);
     } else {
-      return this.#itemStore.getTables();
+      return this.#itemsStore.getTables();
     }
   }
 
   private GetLocation ({ generalLocation, detailedLocation }: LocationPayload) {
     if (generalLocation || detailedLocation) {
-      return this.#locationStore.getTable(
+      return this.#locationsCheckedStored.getTable(
         `${generalLocation}-${detailedLocation}`
       );
     } else {
-      return this.#locationStore.getTables();
+      return this.#locationsCheckedStored.getTables();
     }
   }
 
-  private SaveId (user: User) {
-    return this.#mode === Mode.ITEMSYNC ? this.id : user.id;
+  private SaveEntrance (user: User, { entranceName, exitName, useRoomId }: EntrancePayload) {
+    if (entranceName) {
+      const dataToSave = _.omitBy(
+        {
+          entranceName
+        },
+        _.isNil
+      );
+
+      this.#entrances.setPartialRow(
+        exitName,
+        useRoomId ?? this.globalUseRoomId ? this.id : user.id,
+        dataToSave as {}
+      );
+    } else {
+      this.#entrances.delRow(
+        exitName,
+        useRoomId ?? this.globalUseRoomId ? this.id : user.id
+      )
+    }
   }
 
-  private SaveItemForLocation (user: User, { itemName, generalLocation, detailedLocation }:
-  {
-    itemName: string
-    generalLocation: string
-    detailedLocation: string
-  }) {
-    const dataToSave = _.omitBy(
-      {
-        itemName
-      },
-      _.isNil
-    );
+  private SaveIslandsForChart (user: User, { chart, island, useRoomId }: IslandsForChartPayload) {
+    if (island) {
+      const dataToSave = _.omitBy(
+        {
+          island
+        },
+        _.isNil
+      );
 
-    this.#itemsForLocations.setPartialRow(
-      `${generalLocation}#${detailedLocation}`,
-      this.SaveId(user),
-      dataToSave as {}
-    );
+      this.#islandsForCharts.setPartialRow(
+        chart,
+        useRoomId ?? this.globalUseRoomId ? this.id : user.id,
+        dataToSave as {}
+      );
+    } else {
+      this.#islandsForCharts.delRow(
+        chart,
+        useRoomId ?? this.globalUseRoomId ? this.id : user.id
+      )
+    }
+  }
+
+  private SaveItemsForLocations (user: User,
+    { itemName, generalLocation, detailedLocation, useRoomId }: ItemsForLocationsPayload) {
+    if (itemName) {
+      const dataToSave = _.omitBy(
+        {
+          itemName
+        },
+        _.isNil
+      );
+      this.#itemsForLocations.setPartialRow(
+        `${generalLocation}#${detailedLocation}`,
+        useRoomId ?? this.globalUseRoomId ? this.id : user.id,
+        dataToSave as {}
+      );
+    } else {
+      this.#itemsForLocations.delRow(
+        `${generalLocation}#${detailedLocation}`,
+        useRoomId ?? this.globalUseRoomId ? this.id : user.id
+      )
+    }
   }
 
   private SaveItem (
     user: User,
-    { itemName, count, generalLocation, detailedLocation, sphere }: ItemPayload
+    { itemName, count, generalLocation, detailedLocation, sphere, useRoomId }: ItemPayload
   ) {
     const dataToSave = _.omitBy(
       {
@@ -298,11 +385,15 @@ export class Room {
       _.isNil
     );
 
-    this.#itemStore.setPartialRow(
+    this.#itemsStore.setPartialRow(
       itemName,
-      this.SaveId(user),
+      useRoomId ?? this.globalUseRoomId ? this.id : user.id,
       dataToSave as {}
     );
+
+    if (generalLocation && detailedLocation) {
+      this.SaveItemsForLocations(user, { itemName, generalLocation, detailedLocation });
+    }
   }
 
   private SaveLocation (
@@ -312,7 +403,8 @@ export class Room {
       detailedLocation,
       isChecked,
       itemName,
-      sphere
+      sphere,
+      useRoomId
     }: LocationPayload
   ) {
     const dataToSave = _.omitBy(
@@ -323,11 +415,15 @@ export class Room {
       },
       _.isNil
     );
-    this.#locationStore.setPartialRow(
+    this.#locationsCheckedStored.setPartialRow(
       `${generalLocation}#${detailedLocation}`,
-      this.SaveId(user),
+      useRoomId ?? this.globalUseRoomId ? this.id : user.id,
       dataToSave as {}
     );
+
+    if (!isChecked) {
+      this.SaveItemsForLocations(user, { itemName: '', generalLocation, detailedLocation })
+    }
   }
 
   public FlagDelete () {

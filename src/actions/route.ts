@@ -1,11 +1,11 @@
 import {
   Actions,
+  Get,
   JoinRoom,
   LeaveRoom,
   Message,
-  Set,
-  Get,
-  Method
+  Method,
+  Set
 } from './index.js';
 
 export const Route = (method?: string): Method | null => {

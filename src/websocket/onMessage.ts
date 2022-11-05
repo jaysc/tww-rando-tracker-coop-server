@@ -4,7 +4,15 @@ import { ParseData } from './index.js';
 import type { connection } from '../index.js';
 import { DebugSend } from './debugSend.js';
 import * as _ from 'lodash-es';
-import { Events, Result } from '../actions/index.js';
+import { Events } from '../actions/index.js';
+
+export interface Response {
+  data?: object
+  error?: string
+  event: Events
+  message?: string
+  messageId?: string
+}
 
 export const OnMessage =
   (server: FastifyInstance, con: connection, request: FastifyRequest) =>
@@ -43,12 +51,12 @@ export const OnMessage =
 
       DebugSend();
 
-      const response: Result = {
+      const response: Response = {
+        data: result.data,
+        error: result?.err?.message,
         event: result.event ?? Events.Response,
-        messageId,
         message: result.message,
-        err: result.err,
-        data: result.data
+        messageId
       };
 
       console.log(result);

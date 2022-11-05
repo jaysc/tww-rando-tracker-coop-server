@@ -91,6 +91,8 @@ server.put('/received', (request, reply) => {
     if (result.error) {
       reply.code(500);
       reply.send(result);
+
+      return;
     }
     reply.code(200);
   } else {
@@ -99,6 +101,35 @@ server.put('/received', (request, reply) => {
 
   reply.send();
 });
+
+server.post('/roomExist', (request, reply) => {
+  const payload = JSON.parse(request?.body as string)
+  if (!payload) {
+    reply.code(400);
+    reply.send();
+    return;
+  }
+
+  const { roomName, perma } = payload;
+  if (!roomName || !perma) {
+    reply.code(400);
+    reply.send();
+    return;
+  }
+
+  const room = global.rooms.FindRoomByName(roomName);
+  if (!room) {
+    reply.code(403)
+  } else {
+    if (room.perma !== perma) {
+      reply.code(403);
+    } else {
+      reply.code(200);
+    }
+  }
+
+  reply.send();
+})
 
 server.listen(
   { port: parseInt(process.env.PORT), host: '0.0.0.0' },

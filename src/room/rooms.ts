@@ -68,7 +68,7 @@ export class Rooms {
   }
 
   public JoinRoom (user: User, roomOptions: RoomOptions): Room | null {
-    let room = this.FindRoomByName(roomOptions.name);
+    let room = this.FindRoom(roomOptions);
 
     if (room == null) {
       room = this.CreateRoom(roomOptions, user);
@@ -97,6 +97,18 @@ export class Rooms {
       const room = this.#rooms[roomId as uuid];
       room.RemoveUser(user);
     }
+  }
+
+  public FindRoom ({
+    mode,
+    name,
+    perma
+  }: RoomOptions) {
+    return _.find(this.#rooms, (room) => {
+      return room.name === name &&
+        room.mode === mode &&
+        room.perma === perma
+    });
   }
 
   public FindRoomByName (name: string): Room | undefined {
