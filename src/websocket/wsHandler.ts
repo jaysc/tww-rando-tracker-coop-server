@@ -9,8 +9,13 @@ export const WsHandler =
   (server: FastifyInstance) => (con: connection, request: FastifyRequest) => {
     // 'Connection' event
     if (!con.user) {
-      // todo Retrieve existing user here from cookie (or maybe session id)
-      const userId = request.cookies.userId;
+      // Try cookie
+      let userId = request.cookies.userIda;
+      if (!userId) {
+        // Use queryParam
+        userId = (request.query as any).userId;
+      }
+
       con.user = new User(userId);
       con.isAlive = true;
 
