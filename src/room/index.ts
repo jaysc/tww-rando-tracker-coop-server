@@ -30,6 +30,7 @@ export enum SaveDataType {
   ISLANDS_FOR_CHARTS = 'ISLANDS_FOR_CHARTS',
   ITEM = 'ITEM',
   LOCATION = 'LOCATION',
+  RS_SETTINGS = 'RS_SETTINGS'
 }
 
 export interface EntrancePayload {
@@ -73,6 +74,17 @@ export interface LocationPayload {
   useRoomId?: boolean
 }
 
+export interface RsSettingsPayload {
+  settings: Settings
+  type: SaveDataType
+  useRoomId?: boolean
+}
+
+export interface Settings {
+  options: object
+  certainSettings: object
+}
+
 export enum Mode {
   ITEMSYNC = 'ITEMSYNC', // Single world synced
   COOP = 'COOP', // Single world unsynced
@@ -86,6 +98,7 @@ export class Room {
   #itemsStore: Store = createStore();
   #locationsCheckedStored: Store = createStore();
   #itemsForLocations: Store = createStore();
+  #rsSettings: Settings = { options: {}, certainSettings: {} };
   #userIds: string[] = [];
   mode: Mode;
 
@@ -138,10 +151,15 @@ export class Room {
     return this.#itemsForLocations.getTables();
   }
 
+  get RsSettingsStore () {
+    return this.#rsSettings;
+  }
+
   get globalUseRoomId () {
     return this.mode === Mode.ITEMSYNC;
   }
 
+  // Needs to be updated
   public LoadInitialData (initialData: InitialData, user?: User) {
     const roomUser = user ?? new User(this.id);
 
@@ -203,7 +221,8 @@ export class Room {
       islandsForChart: this.IslandsForChartsStore,
       items: this.ItemsStore,
       itemsForLocation: this.ItemsForLocationStore,
-      locations: this.LocationsCheckedStore
+      locations: this.LocationsCheckedStore,
+      rsSettings: this.RsSettingsStore
     };
   }
 
@@ -253,7 +272,7 @@ export class Room {
     this.lastAction = new Date();
   }
 
-  public SaveData (user: User, saveOptions: EntrancePayload | IslandsForChartPayload | ItemPayload | LocationPayload) {
+  public SaveData (user: User, saveOptions: EntrancePayload | IslandsForChartPayload | ItemPayload | LocationPayload | RsSettingsPayload) {
     if (saveOptions.type === SaveDataType.ENTRANCE) {
       this.SaveEntrance(user, saveOptions as EntrancePayload);
     }
@@ -265,6 +284,10 @@ export class Room {
     }
     if (saveOptions.type === SaveDataType.LOCATION) {
       this.SaveLocation(user, saveOptions as LocationPayload);
+    }
+
+    if (saveOptions.type === SaveDataType.RS_SETTINGS) {
+      this.SaveRsSettings(user, saveOptions as RsSettingsPayload);
     }
 
     const message: Result = {
@@ -424,6 +447,16 @@ export class Room {
     if (!isChecked) {
       this.SaveItemsForLocations(user, { itemName: '', generalLocation, detailedLocation })
     }
+  }
+
+  private SaveRsSettings (
+    user: User,
+    {
+      settings
+    }: RsSettingsPayload
+  ) {
+    const newSettings = _.merge(this.#rsSettings, settings);
+    this.#rsSettings = newSettings;
   }
 
   public FlagDelete () {

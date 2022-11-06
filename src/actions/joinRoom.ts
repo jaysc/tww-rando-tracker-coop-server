@@ -37,7 +37,8 @@ export const JoinRoom: Method = (
         islandsForCharts: room.IslandsForChartsStore,
         items: room.ItemsStore,
         itemsForLocation: room.ItemsForLocationStore,
-        locationsChecked: room.LocationsCheckedStore
+        locationsChecked: room.LocationsCheckedStore,
+        rsSettings: room.RsSettingsStore
       }
     };
   } else {

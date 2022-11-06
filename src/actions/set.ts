@@ -13,10 +13,7 @@ export const Set: Method = (
   }
 
   if (
-    saveOptions.type !== SaveDataType.ENTRANCE &&
-    saveOptions.type !== SaveDataType.ISLANDS_FOR_CHARTS &&
-    saveOptions.type !== SaveDataType.ITEM &&
-    saveOptions.type !== SaveDataType.LOCATION
+    !Object.values(SaveDataType).includes(saveOptions.type)
   ) {
     return {
       message: 'Type invalid'
