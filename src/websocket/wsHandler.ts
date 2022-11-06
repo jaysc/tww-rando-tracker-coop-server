@@ -32,7 +32,12 @@ export const WsHandler =
     if (!global.heartBeat) {
       global.heartBeat = setInterval(() => {
         global.connections.forEach((con) => {
-          if (con.isAlive === false) return con.socket.terminate();
+          if (!con.isAlive) {
+            console.log('[DEBUG] No response from: ', con.user)
+            con.socket.terminate();
+
+            return;
+          }
           con.isAlive = false;
           con.socket.send('PING');
         });
@@ -44,6 +49,7 @@ export const WsHandler =
     con.socket.on('message', OnMessage(server, con, request));
 
     con.socket.on('close', () => {
+      console.log('[DEBUG] Close connection: ', con.user)
       if (con.user) {
         global.rooms.UserDisconnect(con.user);
         global.connections.delete(con.user.id);
@@ -52,6 +58,16 @@ export const WsHandler =
 
       handleHearbeat();
     });
+
+    con.socket.on('error', (error) => {
+      console.log('[DEBUG] Error on connection: ', con.user)
+      console.log('[DEBUG] Error: ', error)
+    })
+
+    con.socket.on('wsClientError', (error) => {
+      console.log('[DEBUG] Client Error on connection: ', con.user)
+      console.log('[DEBUG] Client Error: ', error)
+    })
 
     const response: Result = {
       event: Events.OnConnect,
