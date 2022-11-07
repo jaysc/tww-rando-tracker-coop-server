@@ -46,6 +46,7 @@ export const JoinRoom: Method = (
       data: {
         id: room.id,
         entrances: room.EntranceStore,
+        connectedUsers: room.connectedUsers,
         mode: room.mode,
         islandsForCharts: room.IslandsForChartsStore,
         items: room.ItemsStore,

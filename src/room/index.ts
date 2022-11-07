@@ -3,7 +3,7 @@ import { v4 as uuidv4 } from 'uuid';
 import { User } from '../user/index.js';
 import { createStore, Store } from 'tinybase';
 import { differenceInMinutes } from 'date-fns';
-import { AddUserEvent, Events, Result } from '../actions/events.js';
+import { Events, Result, RoomUpdateEvent } from '../actions/events.js';
 
 export type uuid = string & { readonly _: unique symbol };
 export { Rooms } from './rooms.js';
@@ -160,6 +160,10 @@ export class Room {
     return this.mode === Mode.ITEMSYNC;
   }
 
+  get connectedUsers () {
+    return this.#userIds.length;
+  }
+
   // Needs to be updated
   public LoadInitialData (initialData: InitialData, user?: User) {
     const roomUser = user ?? new User(this.id);
@@ -240,9 +244,15 @@ export class Room {
     user.roomId = this.id;
     this.lastAction = new Date();
 
-    const message: AddUserEvent = {
-      event: Events.AddUser,
-      totalUsers: this.#userIds.length
+    this.onRoomUpdate(user);
+  }
+
+  private onRoomUpdate (user: User) {
+    const message: RoomUpdateEvent = {
+      event: Events.RoomUpdate,
+      data: {
+        connectedUsers: this.connectedUsers
+      }
     };
 
     this.SendMessage(message, user)
@@ -260,6 +270,8 @@ export class Room {
 
     if (userRemoved) {
       this.lastAction = new Date();
+
+      this.onRoomUpdate(user);
     }
 
     return userRemoved;

@@ -2,13 +2,13 @@ import { Table, Tables } from 'tinybase/store'
 import { Mode, Settings, uuid } from '../room'
 
 export enum Events {
-  AddUser = 'addUser',
   DataSaved = 'dataSaved',
   GetData = 'getData',
   ItemMessage = 'itemMessage',
   JoinedRoom = 'joinedRoom',
   Message = 'message',
   LeaveRoom = 'leaveRoom',
+  RoomUpdate = 'roomUpdate',
   Set = 'set',
   OnConnect = 'onConnect',
   Response = 'response',
@@ -22,9 +22,11 @@ export interface Result {
   data?: object
 }
 
-export interface AddUserEvent extends Result {
-  event: Events.AddUser
-  totalUsers: number
+export interface RoomUpdateEvent extends Result {
+  event: Events.RoomUpdate
+  data: {
+    connectedUsers: number
+  }
 }
 
 export interface DataSavedEvent extends Result {
@@ -49,6 +51,7 @@ export interface JoinedRoomEvent extends Result {
   event: Events.JoinedRoom
   data?: {
     id: uuid
+    connectedUsers: number
     entrances: Tables
     mode: Mode
     islandsForCharts: Tables
