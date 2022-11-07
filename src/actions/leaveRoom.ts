@@ -1,12 +1,19 @@
 import { User } from '../user/index.js';
-import type { Method, Result } from './index.js';
+import { Events, LeaveRoomEvent } from './events.js';
+import type { Method } from './index.js';
 
-export const LeaveRoom: Method = (_, user: User): Result => {
+export const LeaveRoom: Method = (_, user: User): LeaveRoomEvent => {
   if (!user.roomId) {
-    return { message: 'User not in room' };
+    return {
+      event: Events.LeaveRoom,
+      message: 'User not in room'
+    };
   }
 
   // Disconnect from room
   user.leaveRoom();
-  return { message: `Left room: ${user.roomId}` };
+  return {
+    event: Events.LeaveRoom,
+    message: `Left room: ${user.roomId}`
+  };
 };

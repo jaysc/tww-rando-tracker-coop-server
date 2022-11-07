@@ -1,9 +1,9 @@
 import * as _ from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../user/index.js';
-import { Events, Result } from '../actions/index.js';
 import { createStore, Store } from 'tinybase';
 import { differenceInMinutes } from 'date-fns';
+import { AddUserEvent, Events, Result } from '../actions/events.js';
 
 export type uuid = string & { readonly _: unique symbol };
 export { Rooms } from './rooms.js';
@@ -28,56 +28,57 @@ export interface InitialData {
 export enum SaveDataType {
   ENTRANCE = 'ENTRANCE',
   ISLANDS_FOR_CHARTS = 'ISLANDS_FOR_CHARTS',
+  ITEMS_FOR_LOCATIONS = 'ITEMS_FOR_LOCATIONS', // Not used
   ITEM = 'ITEM',
   LOCATION = 'LOCATION',
   RS_SETTINGS = 'RS_SETTINGS'
 }
 
-export interface EntrancePayload {
+export interface SaveDataPayload {
+  type: SaveDataType
+  useRoomId?: boolean
+}
+
+export interface EntrancePayload extends SaveDataPayload {
   entranceName: string
   exitName: string
-  type: SaveDataType
-  useRoomId?: boolean
+  type: SaveDataType.ENTRANCE
 }
 
-export interface IslandsForChartPayload {
+export interface IslandsForChartPayload extends SaveDataPayload {
   chart: string
   island: string
-  type: SaveDataType
-  useRoomId?: boolean
+  type: SaveDataType.ISLANDS_FOR_CHARTS
 }
 
-export interface ItemsForLocationsPayload {
+export interface ItemsForLocationsPayload extends SaveDataPayload {
   itemName: string
   generalLocation: string
   detailedLocation: string
-  useRoomId?: boolean
+  type: (SaveDataType.ITEM | SaveDataType.LOCATION)
 }
 
-export interface ItemPayload {
+export interface ItemPayload extends SaveDataPayload {
   count?: number
   detailedLocation?: string
   generalLocation?: string
   itemName: string
   sphere?: number
-  type: SaveDataType
-  useRoomId?: boolean
+  type: SaveDataType.ITEM
 }
 
-export interface LocationPayload {
+export interface LocationPayload extends SaveDataPayload {
   detailedLocation: string
   generalLocation: string
   isChecked?: boolean
   itemName?: string
   sphere?: number
-  type: SaveDataType
-  useRoomId?: boolean
+  type: SaveDataType.LOCATION
 }
 
-export interface RsSettingsPayload {
+export interface RsSettingsPayload extends SaveDataPayload {
   settings: Settings
-  type: SaveDataType
-  useRoomId?: boolean
+  type: SaveDataType.RS_SETTINGS
 }
 
 export interface Settings {
@@ -168,9 +169,10 @@ export class Room {
       (detailedLocations, generalLocation) => {
         _.forEach(detailedLocations, (item: string, detailedLocation: string) => {
           this.SaveItemsForLocations(roomUser, {
-            itemName: item,
+            detailedLocation,
             generalLocation,
-            detailedLocation
+            itemName: item,
+            type: SaveDataType.LOCATION
           })
         });
       }
@@ -237,6 +239,13 @@ export class Room {
     this.#userIds = _.union(this.#userIds, [user.id]);
     user.roomId = this.id;
     this.lastAction = new Date();
+
+    const message: AddUserEvent = {
+      event: Events.AddUser,
+      totalUsers: this.#userIds.length
+    };
+
+    this.SendMessage(message, user)
   }
 
   public RemoveUser (user: User): boolean {
@@ -272,7 +281,7 @@ export class Room {
     this.lastAction = new Date();
   }
 
-  public SaveData (user: User, saveOptions: EntrancePayload | IslandsForChartPayload | ItemPayload | LocationPayload | RsSettingsPayload) {
+  public SaveData (user: User, saveOptions: SaveDataPayload) {
     if (saveOptions.type === SaveDataType.ENTRANCE) {
       this.SaveEntrance(user, saveOptions as EntrancePayload);
     }
@@ -285,7 +294,6 @@ export class Room {
     if (saveOptions.type === SaveDataType.LOCATION) {
       this.SaveLocation(user, saveOptions as LocationPayload);
     }
-
     if (saveOptions.type === SaveDataType.RS_SETTINGS) {
       this.SaveRsSettings(user, saveOptions as RsSettingsPayload);
     }
@@ -298,7 +306,7 @@ export class Room {
     this.SendMessage(message, user);
   }
 
-  public GetData (getOptions: ItemPayload | LocationPayload) {
+  public GetData (getOptions: SaveDataPayload) {
     let result;
 
     if (getOptions.type === SaveDataType.ITEM) {
@@ -398,7 +406,7 @@ export class Room {
 
   private SaveItem (
     user: User,
-    { itemName, count, generalLocation, detailedLocation, sphere, useRoomId }: ItemPayload
+    { count, detailedLocation, generalLocation, itemName, sphere, type, useRoomId }: ItemPayload
   ) {
     const dataToSave = _.omitBy(
       {
@@ -415,7 +423,7 @@ export class Room {
     );
 
     if (generalLocation && detailedLocation) {
-      this.SaveItemsForLocations(user, { itemName, generalLocation, detailedLocation });
+      this.SaveItemsForLocations(user, { detailedLocation, generalLocation, itemName, type });
     }
   }
 
@@ -427,6 +435,7 @@ export class Room {
       isChecked,
       itemName,
       sphere,
+      type,
       useRoomId
     }: LocationPayload
   ) {
@@ -445,7 +454,7 @@ export class Room {
     );
 
     if (!isChecked) {
-      this.SaveItemsForLocations(user, { itemName: '', generalLocation, detailedLocation })
+      this.SaveItemsForLocations(user, { detailedLocation, generalLocation, itemName: '', type })
     }
   }
 

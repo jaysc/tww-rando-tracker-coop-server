@@ -1,8 +1,9 @@
 import type { RawData, WebSocketServer } from 'ws';
-import type { Method, Result } from '../actions/index.js';
+import type { Method } from '../actions/index.js';
 import type { User } from '../user/index.js';
 import { Route } from '../actions/index.js';
 import * as _ from 'lodash-es';
+import { Result } from '../actions/events.js';
 
 class Action {
   public data: object;

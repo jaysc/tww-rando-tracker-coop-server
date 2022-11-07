@@ -1,4 +1,4 @@
-import { Events } from '../actions/index.js';
+import { Events, ItemMessageEvent } from '../actions/events.js';
 
 export interface ItemMessagePayload {
   itemId: string
@@ -36,10 +36,12 @@ const ItemMessage = ({
     };
   }
 
-  room.SendMessage({
+  const message: ItemMessageEvent = {
     event: Events.ItemMessage,
     data: { itemId, playerName, checkName }
-  });
+  }
+
+  room.SendMessage(message);
 
   return { message: 'success' };
 };

@@ -1,5 +1,6 @@
 import { User } from '../user';
-import type { Method, Result } from '.';
+import type { Method } from '.';
+import { Events, MessageEvent } from './events.js';
 
 interface MessageData extends Object {
   message?: string
@@ -7,22 +8,37 @@ interface MessageData extends Object {
 export const Message: Method = (
   messageData: MessageData,
   user: User
-): Result => {
+): MessageEvent => {
   if (!messageData.message) {
-    return { message: 'No message' };
+    return {
+      event: Events.Message,
+      error: new Error('No message')
+    };
   }
 
   if (!user.roomId) {
-    return { message: 'User not in room' };
+    return {
+      event: Events.Message,
+      error: new Error('User not in room')
+    };
   }
 
   // send a message
   const room = global.rooms.FindRoomById(user.roomId);
   if (room) {
-    room.SendMessage({ message: messageData.message }, user);
-    return { message: 'Message Sent' };
+    room.SendMessage({
+      event: Events.Message,
+      message: messageData.message
+    }, user);
+    return {
+      event: Events.Message,
+      error: new Error('Message Sent')
+    };
   } else {
     user.leaveRoom();
-    return { message: 'Room not found' };
+    return {
+      event: Events.Message,
+      error: new Error('Room not found')
+    };
   }
 };

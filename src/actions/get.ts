@@ -1,13 +1,15 @@
-import { ItemPayload, LocationPayload, SaveDataType } from '../room/index.js';
+import { SaveDataPayload, SaveDataType } from '../room/index.js';
 import type { Method } from '.';
 import type { User } from '../user/index.js';
+import { Events, GetDataEvent } from './events.js';
 
 export const Get: Method = (
-  getOptions: ItemPayload | LocationPayload,
+  getOptions: SaveDataPayload,
   user: User
-) => {
+): GetDataEvent => {
   if (!user.roomId) {
     return {
+      event: Events.GetData,
       message: 'User not in room'
     };
   }
@@ -17,6 +19,7 @@ export const Get: Method = (
     getOptions.type !== SaveDataType.LOCATION
   ) {
     return {
+      event: Events.GetData,
       message: 'Type invalid'
     };
   }
@@ -24,11 +27,13 @@ export const Get: Method = (
 
   if (getResult) {
     return {
+      event: Events.GetData,
       data: getResult
     };
   }
 
   return {
+    event: Events.GetData,
     message: 'Not Found'
   };
 };

@@ -4,9 +4,9 @@ import { ParseData } from './index.js';
 import type { connection } from '../index.js';
 import { DebugSend } from './debugSend.js';
 import * as _ from 'lodash-es';
-import { Events } from '../actions/index.js';
+import { Events } from '../actions/events.js';
 
-export interface Response {
+export interface WebsocketResponse {
   data?: object
   error?: string
   event: Events
@@ -51,10 +51,10 @@ export const OnMessage =
 
       DebugSend();
 
-      const response: Response = {
+      const response: WebsocketResponse = {
         data: result.data,
-        error: result?.err?.message,
-        event: result.event ?? Events.Response,
+        error: result.error?.message,
+        event: result.event,
         message: result.message,
         messageId
       };

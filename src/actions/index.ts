@@ -1,5 +1,6 @@
 import type { WebSocketServer } from 'ws';
 import type { User } from '../user/index.js';
+import { Result } from './events.js';
 
 export enum Actions {
   Get = 'get',
@@ -7,23 +8,6 @@ export enum Actions {
   LeaveRoom = 'leaveRoom',
   Message = 'message',
   Set = 'set',
-}
-
-export enum Events {
-  DataSaved = 'dataSaved',
-  ItemMessage = 'itemMessage',
-  JoinedRoom = 'joinedRoom',
-  OnConnect = 'onConnect',
-  Response = 'response',
-}
-
-export interface Result {
-  event?: Events
-  messageId?: string
-  message?: string
-  err?: Error
-  errorMessage?: string
-  data?: object
 }
 
 export type Method = (data: any, user: User, ws: WebSocketServer) => Result;

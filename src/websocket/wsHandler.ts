@@ -2,8 +2,8 @@ import type { FastifyInstance, FastifyRequest } from 'fastify';
 import { OnMessage } from './onMessage.js';
 import type { connection } from '../index.js';
 import { User } from '../user/index.js';
-import { Events, Result } from '../actions/index.js';
 import { DebugSend } from './debugSend.js';
+import { Events, OnConnectEvent } from '../actions/events.js';
 
 export const WsHandler =
   (server: FastifyInstance) => (con: connection, request: FastifyRequest) => {
@@ -69,7 +69,7 @@ export const WsHandler =
       console.log('[DEBUG] Client Error: ', error)
     })
 
-    const response: Result = {
+    const response: OnConnectEvent = {
       event: Events.OnConnect,
       data: {
         userId: con.user.id

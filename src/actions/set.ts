@@ -1,14 +1,16 @@
 import { ItemPayload, LocationPayload, SaveDataType } from '../room/index.js';
 import type { User } from '../user/index.js';
-import type { Method, Result } from './index.js';
+import { Events, SetEvent } from './events.js';
+import type { Method } from './index.js';
 
 export const Set: Method = (
   saveOptions: ItemPayload | LocationPayload,
   user: User
-): Result => {
+): SetEvent => {
   if (!user.roomId) {
     return {
-      message: 'User not in room'
+      event: Events.Set,
+      error: new Error('User not in room')
     };
   }
 
@@ -16,31 +18,35 @@ export const Set: Method = (
     !Object.values(SaveDataType).includes(saveOptions.type)
   ) {
     return {
-      message: 'Type invalid'
+      event: Events.Set,
+      error: new Error('Type invalid')
     };
   }
 
   let data: ItemPayload | LocationPayload;
   if (saveOptions.type === SaveDataType.ITEM) {
-    data = saveOptions as ItemPayload;
+    data = saveOptions;
 
     if (!data.itemName) {
       return {
-        message: 'Missing itemName'
+        event: Events.Set,
+        error: new Error('Missing itemName')
       };
     }
   } else if (saveOptions.type === SaveDataType.LOCATION) {
-    data = saveOptions as LocationPayload;
+    data = saveOptions;
 
     if (!data.generalLocation) {
       return {
-        message: 'Missing generalLocation'
+        event: Events.Set,
+        error: new Error('Missing generalLocation')
       };
     }
 
     if (!data.detailedLocation) {
       return {
-        message: 'Missing detailedLocation'
+        event: Events.Set,
+        error: new Error('Missing detailedLocation')
       };
     }
   }
@@ -50,11 +56,13 @@ export const Set: Method = (
     room.SaveData(user, saveOptions);
   } else {
     return {
-      message: 'Room not found'
+      event: Events.Set,
+      error: new Error('Room not found')
     };
   }
 
   return {
+    event: Events.Set,
     message: 'Data saved'
   };
 };
