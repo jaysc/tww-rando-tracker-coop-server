@@ -28,7 +28,7 @@ export interface InitialData {
 export enum SaveDataType {
   ENTRANCE = 'ENTRANCE',
   ISLANDS_FOR_CHARTS = 'ISLANDS_FOR_CHARTS',
-  ITEMS_FOR_LOCATIONS = 'ITEMS_FOR_LOCATIONS', // Not used
+  ITEMS_FOR_LOCATIONS = 'ITEMS_FOR_LOCATIONS',
   ITEM = 'ITEM',
   LOCATION = 'LOCATION',
   RS_SETTINGS = 'RS_SETTINGS'
@@ -55,7 +55,7 @@ export interface ItemsForLocationsPayload extends SaveDataPayload {
   itemName: string
   generalLocation: string
   detailedLocation: string
-  type: (SaveDataType.ITEM | SaveDataType.LOCATION)
+  type: (SaveDataType.ITEMS_FOR_LOCATIONS)
 }
 
 export interface ItemPayload extends SaveDataPayload {
@@ -176,7 +176,7 @@ export class Room {
             detailedLocation,
             generalLocation,
             itemName: item,
-            type: SaveDataType.LOCATION
+            type: SaveDataType.ITEMS_FOR_LOCATIONS
           })
         });
       }
@@ -299,6 +299,9 @@ export class Room {
     }
     if (saveOptions.type === SaveDataType.ISLANDS_FOR_CHARTS) {
       this.SaveIslandsForChart(user, saveOptions as IslandsForChartPayload);
+    }
+    if (saveOptions.type === SaveDataType.ITEMS_FOR_LOCATIONS) {
+      this.SaveItemsForLocations(user, saveOptions as ItemsForLocationsPayload);
     }
     if (saveOptions.type === SaveDataType.ITEM) {
       this.SaveItem(user, saveOptions as ItemPayload);
@@ -435,7 +438,7 @@ export class Room {
     );
 
     if (generalLocation && detailedLocation) {
-      this.SaveItemsForLocations(user, { detailedLocation, generalLocation, itemName, type });
+      this.SaveItemsForLocations(user, { detailedLocation, generalLocation, itemName, type: SaveDataType.ITEMS_FOR_LOCATIONS });
     }
   }
 
@@ -466,7 +469,7 @@ export class Room {
     );
 
     if (!isChecked) {
-      this.SaveItemsForLocations(user, { detailedLocation, generalLocation, itemName: '', type })
+      this.SaveItemsForLocations(user, { detailedLocation, generalLocation, itemName: '', type: SaveDataType.ITEMS_FOR_LOCATIONS })
     }
   }
 
