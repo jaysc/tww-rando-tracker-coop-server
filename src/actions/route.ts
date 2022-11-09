@@ -5,7 +5,8 @@ import {
   LeaveRoom,
   Message,
   Method,
-  Set
+  Set,
+  SetName
 } from './index.js';
 
 export const Route = (method?: string): Method | null => {
@@ -24,6 +25,8 @@ export const Route = (method?: string): Method | null => {
       return Set;
     case Actions.Get:
       return Get;
+    case Actions.SetName:
+      return SetName;
     default:
       console.log(`Method not found: ${method}`);
       break;

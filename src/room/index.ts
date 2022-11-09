@@ -10,6 +10,7 @@ export { Rooms } from './rooms.js';
 
 export interface RoomOptions {
   name: string
+  username: string
   password?: string
   perma: string
   mode?: Mode
@@ -255,7 +256,7 @@ export class Room {
     this.SendRoomUpdate(user);
   }
 
-  private SendRoomUpdate (user: User) {
+  public SendRoomUpdate (user?: User) {
     const message: RoomUpdateEvent = {
       event: Events.RoomUpdate,
       data: {

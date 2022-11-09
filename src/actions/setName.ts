@@ -10,19 +10,15 @@ export const SetName: Method = (
   setNamePayload: SetNamePayload,
   user: User
 ): SetNameEvent => {
-  if (!setNamePayload.name) {
-    return {
-      event: Events.SetName,
-      name: setNamePayload.name,
-      error: new Error('User name not specified')
-    };
-  }
-
   user.SetName(setNamePayload.name);
+  if (user.Room) {
+    user.Room.SendRoomUpdate();
+  }
 
   return {
     event: Events.SetName,
-    name: user.name,
-    error: new Error('Room not found')
+    data: {
+      name: user.name
+    }
   };
 };

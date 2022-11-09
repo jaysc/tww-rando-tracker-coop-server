@@ -89,5 +89,7 @@ export interface ResponseEvent extends Result {
 
 export interface SetNameEvent extends Result {
   event: Events.SetName
-  name: string
+  data: {
+    name: string
+  }
 }
