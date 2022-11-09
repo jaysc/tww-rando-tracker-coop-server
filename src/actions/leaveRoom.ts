@@ -11,7 +11,7 @@ export const LeaveRoom: Method = (_, user: User): LeaveRoomEvent => {
   }
 
   // Disconnect from room
-  user.leaveRoom();
+  user.LeaveRoom();
   return {
     event: Events.LeaveRoom,
     message: `Left room: ${user.roomId}`

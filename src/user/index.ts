@@ -1,9 +1,11 @@
 import { v4 } from 'uuid';
 import { Room, RoomOptions, uuid } from '../room';
+import NAMES from './names.js';
 
 export class User {
   public id: string;
   public roomId?: uuid;
+  public name: string = User.GetRandomName();
 
   constructor (userID?: string) {
     if (userID) {
@@ -16,6 +18,10 @@ export class User {
     this.id = userID ?? v4();
   }
 
+  public static GetRandomName () {
+    return NAMES[Math.floor(Math.random() * NAMES.length)];
+  }
+
   get Room () {
     return this.roomId ? global.rooms.FindRoomById(this.roomId) : null;
   }
@@ -24,10 +30,14 @@ export class User {
     return global.rooms.JoinRoom(this, roomOptions);
   }
 
-  public leaveRoom () {
+  public LeaveRoom () {
     if (this.roomId) {
       global.rooms.LeaveRoom(this.roomId, this);
       this.roomId = undefined;
     }
+  }
+
+  public SetName (newName: string) {
+    this.name = newName.slice(0, 20);
   }
 }

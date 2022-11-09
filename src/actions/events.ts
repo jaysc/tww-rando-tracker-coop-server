@@ -6,12 +6,13 @@ export enum Events {
   GetData = 'getData',
   ItemMessage = 'itemMessage',
   JoinedRoom = 'joinedRoom',
-  Message = 'message',
   LeaveRoom = 'leaveRoom',
-  RoomUpdate = 'roomUpdate',
-  Set = 'set',
+  Message = 'message',
   OnConnect = 'onConnect',
   Response = 'response',
+  RoomUpdate = 'roomUpdate',
+  Set = 'set',
+  SetName = 'setName'
 }
 
 export interface Result {
@@ -25,7 +26,7 @@ export interface Result {
 export interface RoomUpdateEvent extends Result {
   event: Events.RoomUpdate
   data: {
-    connectedUsers: number
+    users: Record<string, string>
   }
 }
 
@@ -51,7 +52,8 @@ export interface JoinedRoomEvent extends Result {
   event: Events.JoinedRoom
   data?: {
     id: uuid
-    connectedUsers: number
+    // Sending raw userId. Could truncate for security in future
+    users: Record<string, string>
     entrances: Tables
     mode: Mode
     islandsForCharts: Tables
@@ -83,4 +85,9 @@ export interface SetEvent extends Result {
 
 export interface ResponseEvent extends Result {
   event: Events.Response
+}
+
+export interface SetNameEvent extends Result {
+  event: Events.SetName
+  name: string
 }

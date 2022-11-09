@@ -35,7 +35,7 @@ export const Message: Method = (
       error: new Error('Message Sent')
     };
   } else {
-    user.leaveRoom();
+    user.LeaveRoom();
     return {
       event: Events.Message,
       error: new Error('Room not found')

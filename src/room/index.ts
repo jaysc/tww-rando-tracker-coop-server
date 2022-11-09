@@ -160,6 +160,13 @@ export class Room {
     return this.mode === Mode.ITEMSYNC;
   }
 
+  get Users (): Record<string, string> {
+    return _.reduce(this.#userIds, (acc, userId) => {
+      _.set(acc, userId, global.connections.get(userId)?.user?.name)
+      return acc;
+    }, {})
+  }
+
   get connectedUsers () {
     return this.#userIds.length;
   }
@@ -220,9 +227,10 @@ export class Room {
     return {
       name: this.name,
       perma: this.perma,
+      mode: this.mode,
       createdDate: this.createdDate,
       lastAction: this.lastAction,
-      users: this.#userIds,
+      users: this.Users,
       entrances: this.EntranceStore,
       islandsForChart: this.IslandsForChartsStore,
       items: this.ItemsStore,
@@ -244,14 +252,14 @@ export class Room {
     user.roomId = this.id;
     this.lastAction = new Date();
 
-    this.onRoomUpdate(user);
+    this.SendRoomUpdate(user);
   }
 
-  private onRoomUpdate (user: User) {
+  private SendRoomUpdate (user: User) {
     const message: RoomUpdateEvent = {
       event: Events.RoomUpdate,
       data: {
-        connectedUsers: this.connectedUsers
+        users: this.Users
       }
     };
 
@@ -271,7 +279,7 @@ export class Room {
     if (userRemoved) {
       this.lastAction = new Date();
 
-      this.onRoomUpdate(user);
+      this.SendRoomUpdate(user);
     }
 
     return userRemoved;
