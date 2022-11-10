@@ -10,7 +10,7 @@ export const WsHandler =
     // 'Connection' event
     if (!con.user) {
       // Try cookie
-      let userId = request.cookies.userIda;
+      let userId = request.cookies.userId;
       if (!userId) {
         // Use queryParam
         userId = (request.query as any).userId;
