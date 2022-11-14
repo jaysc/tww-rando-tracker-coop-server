@@ -37,9 +37,9 @@ export const JoinRoom: Method = (
     };
   }
 
-  const room = user.JoinRoom(roomOptions);
-
   user.SetName(roomOptions.username)
+
+  const room = user.JoinRoom(roomOptions);
 
   if (room) {
     return {
