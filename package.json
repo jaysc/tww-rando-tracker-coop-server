@@ -21,9 +21,9 @@
     "@fastify/websocket": "^7.1.1",
     "date-fns": "^2.29.3",
     "dotenv": "^16.0.3",
-    "fastify": "^4.9.2",
+    "fastify": "^4.10.0",
     "lodash-es": "^4.17.21",
-    "tinybase": "^2.1.0",
+    "tinybase": "^2.1.1",
     "uuid": "^9.0.0"
   },
   "devDependencies": {
@@ -31,14 +31,14 @@
     "@types/node": "^18.11.9",
     "@types/uuid": "^8.3.4",
     "@types/ws": "^8.5.3",
-    "@typescript-eslint/eslint-plugin": "^5.42.0",
-    "eslint": "^8.26.0",
+    "@typescript-eslint/eslint-plugin": "^5.43.0",
+    "eslint": "^8.27.0",
     "eslint-config-standard-with-typescript": "^23.0.0",
     "eslint-plugin-import": "^2.26.0",
-    "eslint-plugin-n": "^15.4.0",
+    "eslint-plugin-n": "^15.5.1",
     "eslint-plugin-promise": "^6.1.1",
     "nodemon": "^2.0.20",
     "tsc-watch": "^5.0.3",
-    "typescript": "^4.8.4"
+    "typescript": "^4.9.3"
   }
 }

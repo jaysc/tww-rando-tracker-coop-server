@@ -101,6 +101,7 @@ export class Room {
   #locationsCheckedStored: Store = createStore();
   #itemsForLocations: Store = createStore();
   #rsSettings: Settings = { options: {}, certainSettings: {} };
+  #rsSettingsInProgress: boolean = false;
   #userIds: string[] = [];
   mode: Mode;
 
@@ -237,7 +238,8 @@ export class Room {
       items: this.ItemsStore,
       itemsForLocation: this.ItemsForLocationStore,
       locations: this.LocationsCheckedStore,
-      rsSettings: this.RsSettingsStore
+      rsSettings: this.RsSettingsStore,
+      rsSettingsInProgress: this.#rsSettingsInProgress
     };
   }
 
@@ -260,7 +262,8 @@ export class Room {
     const message: RoomUpdateEvent = {
       event: Events.RoomUpdate,
       data: {
-        users: this.Users
+        users: this.Users,
+        rsSettingsInProgress: this.#rsSettingsInProgress
       }
     };
 
@@ -300,6 +303,10 @@ export class Room {
     });
 
     this.lastAction = new Date();
+  }
+
+  public SettingsUpdateInProgress (value: boolean) {
+    this.#rsSettingsInProgress = value;
   }
 
   public SaveData (user: User, saveOptions: SaveDataPayload) {

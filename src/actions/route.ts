@@ -6,7 +6,8 @@ import {
   Message,
   Method,
   Set,
-  SetName
+  SetName,
+  SettingsUpdate
 } from './index.js';
 
 export const Route = (method?: string): Method | null => {
@@ -27,6 +28,8 @@ export const Route = (method?: string): Method | null => {
       return Get;
     case Actions.SetName:
       return SetName;
+    case Actions.SettingsUpdate:
+      return SettingsUpdate;
     default:
       console.log(`Method not found: ${method}`);
       break;

@@ -12,7 +12,8 @@ export enum Events {
   Response = 'response',
   RoomUpdate = 'roomUpdate',
   Set = 'set',
-  SetName = 'setName'
+  SetName = 'setName',
+  SettingsUpdate = 'settingsUpdate'
 }
 
 export interface Result {
@@ -27,6 +28,7 @@ export interface RoomUpdateEvent extends Result {
   event: Events.RoomUpdate
   data: {
     users: Record<string, string>
+    rsSettingsInProgress: boolean
   }
 }
 
@@ -91,5 +93,12 @@ export interface SetNameEvent extends Result {
   event: Events.SetName
   data: {
     name: string
+  }
+}
+
+export interface SettingsUpdateEvent extends Result {
+  event: Events.SettingsUpdate
+  data: {
+    inProgress: boolean
   }
 }

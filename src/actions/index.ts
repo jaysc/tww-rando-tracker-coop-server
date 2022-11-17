@@ -8,7 +8,8 @@ export enum Actions {
   LeaveRoom = 'leaveRoom',
   Message = 'message',
   Set = 'set',
-  SetName = 'setName'
+  SetName = 'setName',
+  SettingsUpdate = 'settingsUpdate'
 }
 
 export type Method = (data: any, user: User, ws: WebSocketServer) => Result;
@@ -20,3 +21,4 @@ export { Message } from './message.js';
 export { Route } from './route.js';
 export { Set } from './set.js';
 export { SetName } from './setName.js';
+export { SettingsUpdate } from './settingsUpdate.js';
