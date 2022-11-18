@@ -28,7 +28,7 @@ export interface RoomUpdateEvent extends Result {
   event: Events.RoomUpdate
   data: {
     users: Record<string, string>
-    rsSettingsInProgress: boolean
+    rsSettingsInProgressUserId: string
   }
 }
 
@@ -63,6 +63,7 @@ export interface JoinedRoomEvent extends Result {
     itemsForLocation: Tables
     locationsChecked: Tables
     rsSettings: Settings
+    rsSettingsInProgressUserId: string
   }
 }
 

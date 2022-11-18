@@ -101,7 +101,7 @@ export class Room {
   #locationsCheckedStored: Store = createStore();
   #itemsForLocations: Store = createStore();
   #rsSettings: Settings = { options: {}, certainSettings: {} };
-  #rsSettingsInProgress: boolean = false;
+  #rsSettingsInProgressUserId: string = '';
   #userIds: string[] = [];
   mode: Mode;
 
@@ -160,6 +160,10 @@ export class Room {
 
   get globalUseRoomId () {
     return this.mode === Mode.ITEMSYNC;
+  }
+
+  get RsSettingsInProgressUserId () {
+    return this.#rsSettingsInProgressUserId;
   }
 
   get Users (): Record<string, string> {
@@ -239,7 +243,7 @@ export class Room {
       itemsForLocation: this.ItemsForLocationStore,
       locations: this.LocationsCheckedStore,
       rsSettings: this.RsSettingsStore,
-      rsSettingsInProgress: this.#rsSettingsInProgress
+      rsSettingsInProgress: this.#rsSettingsInProgressUserId
     };
   }
 
@@ -263,7 +267,7 @@ export class Room {
       event: Events.RoomUpdate,
       data: {
         users: this.Users,
-        rsSettingsInProgress: this.#rsSettingsInProgress
+        rsSettingsInProgressUserId: this.#rsSettingsInProgressUserId
       }
     };
 
@@ -282,6 +286,10 @@ export class Room {
 
     if (userRemoved) {
       this.lastAction = new Date();
+
+      if (this.#rsSettingsInProgressUserId === user.id) {
+        this.#rsSettingsInProgressUserId = '';
+      }
 
       this.SendRoomUpdate(user);
     }
@@ -305,8 +313,8 @@ export class Room {
     this.lastAction = new Date();
   }
 
-  public SettingsUpdateInProgress (value: boolean) {
-    this.#rsSettingsInProgress = value;
+  public SettingsUpdateInProgress (value: string) {
+    this.#rsSettingsInProgressUserId = value;
   }
 
   public SaveData (user: User, saveOptions: SaveDataPayload) {

@@ -54,7 +54,8 @@ export const JoinRoom: Method = (
         items: room.ItemsStore,
         itemsForLocation: room.ItemsForLocationStore,
         locationsChecked: room.LocationsCheckedStore,
-        rsSettings: room.RsSettingsStore
+        rsSettings: room.RsSettingsStore,
+        rsSettingsInProgressUserId: room.RsSettingsInProgressUserId
       }
     };
   } else {

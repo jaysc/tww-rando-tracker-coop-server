@@ -3,7 +3,7 @@ import { Events, Result } from './events.js';
 import type { Method } from './index.js';
 
 export interface SettingsUpdatePayload {
-  inProgress: boolean
+  rsSettingsInProgressUserId: string
 }
 
 export const SettingsUpdate: Method = (
@@ -12,7 +12,7 @@ export const SettingsUpdate: Method = (
 ): Result => {
   const room = user.Room;
   if (room) {
-    room.SettingsUpdateInProgress(settingsUpdatePayload.inProgress ?? false);
+    room.SettingsUpdateInProgress(settingsUpdatePayload.rsSettingsInProgressUserId);
     room.SendRoomUpdate(user);
   } else {
     return {
