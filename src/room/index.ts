@@ -287,7 +287,7 @@ export class Room {
     if (userRemoved) {
       this.lastAction = new Date();
 
-      if (this.#rsSettingsInProgressUserId === user.id) {
+      if (this.#rsSettingsInProgressUserId === user.id || _.isNil(this.Users.length)) {
         this.#rsSettingsInProgressUserId = '';
       }
 
