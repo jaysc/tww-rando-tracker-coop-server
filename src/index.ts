@@ -5,6 +5,7 @@ import dotenv from 'dotenv';
 
 import fws, { SocketStream } from '@fastify/websocket';
 import fc from '@fastify/cookie';
+import cors from '@fastify/cors';
 import { User } from './user/index.js';
 import { uuid } from './room/index.js';
 import { WsHandler } from './websocket/wsHandler.js';
@@ -13,6 +14,7 @@ import { fileURLToPath } from 'url';
 import { DebugSend } from './websocket/debugSend.js';
 import { Rooms } from './room/rooms.js';
 import { ItemMessage, ItemMessagePayload } from './route/itemMessage.js';
+import { ExportData } from './route/exportData.js';
 dotenv.config();
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -29,6 +31,9 @@ server.register(fws, {
 server.register(fc, {
   secret: 'secret'
 });
+server.register(cors, {
+  origin: true
+})
 
 server.get('/ping', async (request, reply) => {
   return 'pong\n';
@@ -101,6 +106,26 @@ server.put('/received', (request, reply) => {
 
   reply.send();
 });
+
+server.get('/exportData/:roomId', (request, reply) => {
+  const { roomId } = request.params as any;
+  if (roomId) {
+    const result = ExportData(roomId)
+    if (result.error) {
+      reply.code(500);
+    } else {
+      reply.code(200);
+      reply.headers({
+        'Content-Disposition': 'attachment; filename="tww_rando_tracker_coop_progress.json"',
+        'Content-Type': 'application/json'
+      })
+    }
+    reply.send(result)
+  } else {
+    reply.code(404);
+    reply.send();
+  }
+})
 
 server.post('/roomExist', (request, reply) => {
   const payload = JSON.parse(request?.body as string)

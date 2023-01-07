@@ -1,7 +1,7 @@
 import * as _ from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../user/index.js';
-import { createStore, Store } from 'tinybase';
+import { createStore, Store, Tables } from 'tinybase';
 import { differenceInMinutes } from 'date-fns';
 import { Events, Result, RoomUpdateEvent } from '../actions/events.js';
 
@@ -25,6 +25,9 @@ export interface InitialData {
     locationsChecked: object
   }
 }
+
+const EXPORT_ROOM_ID = '#ROOM_ID';
+const EXPORT_USER_ID = '#USER_ID';
 
 export enum SaveDataType {
   ENTRANCE = 'ENTRANCE',
@@ -104,6 +107,7 @@ export class Room {
   #rsSettingsInProgressUserId: string = '';
   #userIds: string[] = [];
   mode: Mode;
+  #userIdHistory: string[] = [];
 
   public perma: string;
   public id: uuid;
@@ -177,6 +181,45 @@ export class Room {
     return this.#userIds.length;
   }
 
+  public GetExportData () {
+    const exportItems = this.handleExportData(this.ItemsStore);
+    const exportEntrances = this.handleExportData(this.EntranceStore);
+    const exportIslandsForChart = this.handleExportData(this.IslandsForChartsStore);
+    const exportItemsForLocation = this.handleExportData(this.ItemsForLocationStore);
+    const exportLocations = this.handleExportData(this.LocationsCheckedStore);
+
+    return {
+      prema: this.perma,
+      mode: this.mode,
+      entrances: exportEntrances,
+      islandsForChart: exportIslandsForChart,
+      items: exportItems,
+      itemsForLocation: exportItemsForLocation,
+      locations: exportLocations,
+      rsSettings: this.RsSettingsStore
+    }
+  }
+
+  private handleExportData (table: Tables) {
+    return _.cloneWith(table, (store) => {
+      return this.replaceStringInJson(store)
+    });
+  }
+
+  private replaceStringInJson (object: object): object {
+    let objectString = JSON.stringify(object);
+
+    objectString = objectString.replaceAll(this.id, EXPORT_ROOM_ID);
+
+    _.forEach(this.#userIdHistory, (userId, index) => {
+      const exportUserId = `${userId}_${index}`;
+
+      objectString = objectString.replaceAll(userId, exportUserId);
+    })
+
+    return JSON.parse(objectString);
+  }
+
   // Needs to be updated
   public LoadInitialData (initialData: InitialData, user?: User) {
     const roomUser = user ?? new User(this.id);
@@ -237,6 +280,7 @@ export class Room {
       createdDate: this.createdDate,
       lastAction: this.lastAction,
       users: this.Users,
+      userIdHistory: this.#userIdHistory,
       entrances: this.EntranceStore,
       islandsForChart: this.IslandsForChartsStore,
       items: this.ItemsStore,
@@ -318,6 +362,10 @@ export class Room {
   }
 
   public SaveData (user: User, saveOptions: SaveDataPayload) {
+    if (!this.#userIdHistory.includes(user.id)) {
+      this.#userIdHistory.push(user.id);
+    }
+
     if (saveOptions.type === SaveDataType.ENTRANCE) {
       this.SaveEntrance(user, saveOptions as EntrancePayload);
     }
