@@ -1,6 +1,6 @@
-import { ItemPayload, LocationPayload, SaveDataType } from '../room/index.js';
+import { type ItemPayload, type LocationPayload, SaveDataType } from '../room/index.js';
 import type { User } from '../user/index.js';
-import { Events, SetEvent } from './events.js';
+import { Events, type SetEvent } from './events.js';
 import type { Method } from './index.js';
 
 export const Set: Method = (

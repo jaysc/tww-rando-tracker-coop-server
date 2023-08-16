@@ -1,7 +1,7 @@
-import { Mode, RoomOptions } from '../room/index.js';
+import { Mode, type RoomOptions } from '../room/index.js';
 import type { User } from '../user/index.js';
-import { Events, JoinedRoomEvent } from './events.js';
-import { Method } from './index.js';
+import { Events, type JoinedRoomEvent } from './events.js';
+import { type Method } from './index.js';
 
 export const JoinRoom: Method = (
   roomOptions: RoomOptions,

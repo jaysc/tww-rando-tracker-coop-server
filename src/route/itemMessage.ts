@@ -1,4 +1,4 @@
-import { Events, ItemMessageEvent } from '../actions/events.js';
+import { Events, type ItemMessageEvent } from '../actions/events.js';
 
 export interface ItemMessagePayload {
   itemId: string

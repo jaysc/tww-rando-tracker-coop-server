@@ -1,5 +1,5 @@
 import type { User } from '../user/index.js';
-import { Events, Result } from './events.js';
+import { Events, type Result } from './events.js';
 import type { Method } from './index.js';
 
 export interface SettingsUpdatePayload {

@@ -4,7 +4,7 @@ import {
   JoinRoom,
   LeaveRoom,
   Message,
-  Method,
+  type Method,
   Set,
   SetName,
   SettingsUpdate

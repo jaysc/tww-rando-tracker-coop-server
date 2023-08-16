@@ -1,5 +1,5 @@
 import type { User } from '../user/index.js';
-import { Events, SetNameEvent } from './events.js';
+import { Events, type SetNameEvent } from './events.js';
 import type { Method } from './index.js';
 
 export interface SetNamePayload {

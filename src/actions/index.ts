@@ -1,6 +1,6 @@
 import type { WebSocketServer } from 'ws';
 import type { User } from '../user/index.js';
-import { Result } from './events.js';
+import { type Result } from './events.js';
 
 export enum Actions {
   Get = 'get',

@@ -1,5 +1,5 @@
-import { User } from '../user/index.js';
-import { Events, LeaveRoomEvent } from './events.js';
+import { type User } from '../user/index.js';
+import { Events, type LeaveRoomEvent } from './events.js';
 import type { Method } from './index.js';
 
 export const LeaveRoom: Method = (_, user: User): LeaveRoomEvent => {

@@ -1,7 +1,7 @@
-import { SaveDataPayload, SaveDataType } from '../room/index.js';
+import { type SaveDataPayload, SaveDataType } from '../room/index.js';
 import type { Method } from '.';
 import type { User } from '../user/index.js';
-import { Events, GetDataEvent } from './events.js';
+import { Events, type GetDataEvent } from './events.js';
 
 export const Get: Method = (
   getOptions: SaveDataPayload,

@@ -1,6 +1,6 @@
 import * as _ from 'lodash-es';
 import { v4 } from 'uuid';
-import { Room, RoomOptions, uuid } from '../room';
+import { type Room, type RoomOptions, type uuid } from '../room';
 import NAMES from './names.js';
 
 export class User {

@@ -3,7 +3,7 @@ import { OnMessage } from './onMessage.js';
 import type { connection } from '../index.js';
 import { User } from '../user/index.js';
 import { DebugSend } from './debugSend.js';
-import { Events, OnConnectEvent } from '../actions/events.js';
+import { Events, type OnConnectEvent } from '../actions/events.js';
 
 export const WsHandler =
   (server: FastifyInstance) => (con: connection, request: FastifyRequest) => {

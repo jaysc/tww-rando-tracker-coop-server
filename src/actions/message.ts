@@ -1,8 +1,8 @@
-import { User } from '../user';
+import { type User } from '../user';
 import type { Method } from '.';
-import { Events, MessageEvent } from './events.js';
+import { Events, type MessageEvent } from './events.js';
 
-interface MessageData extends Object {
+interface MessageData extends Record<string, unknown> {
   message?: string
 }
 export const Message: Method = (

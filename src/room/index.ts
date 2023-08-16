@@ -59,7 +59,7 @@ export interface ItemsForLocationsPayload extends SaveDataPayload {
   itemName: string
   generalLocation: string
   detailedLocation: string
-  type: (SaveDataType.ITEMS_FOR_LOCATIONS)
+  type: SaveDataType.ITEMS_FOR_LOCATIONS
 }
 
 export interface ItemPayload extends SaveDataPayload {
@@ -212,7 +212,7 @@ export class Room {
     objectString = objectString.replaceAll(this.id, EXPORT_ROOM_ID);
 
     _.forEach(this.#userIdHistory, (userId, index) => {
-      const exportUserId = `${userId}_${index}`;
+      const exportUserId = `${EXPORT_USER_ID}_${index}`;
 
       objectString = objectString.replaceAll(userId, exportUserId);
     })
@@ -437,7 +437,7 @@ export class Room {
       this.#entrances.setPartialRow(
         exitName,
         useRoomId ?? this.globalUseRoomId ? this.id : user.id,
-        dataToSave as {}
+        dataToSave
       );
     } else {
       this.#entrances.delRow(
@@ -459,7 +459,7 @@ export class Room {
       this.#islandsForCharts.setPartialRow(
         chart,
         useRoomId ?? this.globalUseRoomId ? this.id : user.id,
-        dataToSave as {}
+        dataToSave
       );
     } else {
       this.#islandsForCharts.delRow(
@@ -481,7 +481,7 @@ export class Room {
       this.#itemsForLocations.setPartialRow(
         `${generalLocation}#${detailedLocation}`,
         useRoomId ?? this.globalUseRoomId ? this.id : user.id,
-        dataToSave as {}
+        dataToSave
       );
     } else {
       this.#itemsForLocations.delRow(
@@ -506,7 +506,7 @@ export class Room {
     this.#itemsStore.setPartialRow(
       itemName,
       useRoomId ?? this.globalUseRoomId ? this.id : user.id,
-      dataToSave as {}
+      dataToSave
     );
 
     if (generalLocation && detailedLocation) {
@@ -537,7 +537,7 @@ export class Room {
     this.#locationsCheckedStored.setPartialRow(
       `${generalLocation}#${detailedLocation}`,
       useRoomId ?? this.globalUseRoomId ? this.id : user.id,
-      dataToSave as {}
+      dataToSave
     );
 
     if (!isChecked) {

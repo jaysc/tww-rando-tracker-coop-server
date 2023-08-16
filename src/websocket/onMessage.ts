@@ -4,7 +4,7 @@ import { ParseData } from './index.js';
 import type { connection } from '../index.js';
 import { DebugSend } from './debugSend.js';
 import * as _ from 'lodash-es';
-import { Events } from '../actions/events.js';
+import { type Events } from '../actions/events.js';
 
 export interface WebsocketResponse {
   data?: object

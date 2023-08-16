@@ -1,4 +1,4 @@
-import { uuid } from '../room/index.js';
+import { type uuid } from '../room/index.js';
 
 export interface SaveResponse {
   data?: object
