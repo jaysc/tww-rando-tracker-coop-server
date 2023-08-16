@@ -1,5 +1,5 @@
-import { Table, Tables } from 'tinybase/store'
-import { Mode, Settings, uuid } from '../room'
+import { type Table, type Tables } from 'tinybase/store'
+import { type Mode, type Settings, type uuid } from '../room'
 
 export enum Events {
   DataSaved = 'dataSaved',

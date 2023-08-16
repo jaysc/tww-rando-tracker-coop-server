@@ -1,9 +1,9 @@
 import * as _ from 'lodash-es';
 import { v4 as uuidv4 } from 'uuid';
 import { User } from '../user/index.js';
-import { createStore, Store, Tables } from 'tinybase';
+import { createStore, type Store, type Tables } from 'tinybase';
 import { differenceInMinutes } from 'date-fns';
-import { Events, Result, RoomUpdateEvent } from '../actions/events.js';
+import { Events, type Result, type RoomUpdateEvent } from '../actions/events.js';
 
 export type uuid = string & { readonly _: unique symbol };
 export { Rooms } from './rooms.js';
@@ -189,7 +189,7 @@ export class Room {
     const exportLocations = this.handleExportData(this.LocationsCheckedStore);
 
     return {
-      prema: this.perma,
+      perma: this.perma,
       mode: this.mode,
       entrances: exportEntrances,
       islandsForChart: exportIslandsForChart,

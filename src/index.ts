@@ -15,6 +15,7 @@ import { DebugSend } from './websocket/debugSend.js';
 import { Rooms } from './room/rooms.js';
 import { ItemMessage, ItemMessagePayload } from './route/itemMessage.js';
 import { ExportData } from './route/exportData.js';
+import { Exist } from './route/exist.js';
 dotenv.config();
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -127,32 +128,15 @@ server.get('/exportData/:roomId', (request, reply) => {
   }
 })
 
-server.post('/roomExist', (request, reply) => {
-  const payload = JSON.parse(request?.body as string)
-  if (!payload) {
-    reply.code(400);
-    reply.send();
-    return;
-  }
+server.get('/exist/:perma/:name', (request, reply) => {
+  const { perma, name } = request.params as any;
 
-  const { roomName, perma } = payload;
-  if (!roomName || !perma) {
-    reply.code(400);
-    reply.send();
-    return;
-  }
-
-  const room = global.rooms.FindRoomByName(roomName);
-  if (!room) {
-    reply.code(403)
+  const exist = Exist(perma, name);
+  if (exist) {
+    reply.code(200);
   } else {
-    if (room.perma !== perma) {
-      reply.code(403);
-    } else {
-      reply.code(200);
-    }
+    reply.code(404);
   }
-
   reply.send();
 })
 

@@ -5,7 +5,7 @@ import { User } from '../user';
 import { DebugSend } from '../websocket/debugSend.js';
 
 export class Rooms {
-  #rooms: { [RoomId: uuid]: Room } = {};
+  #rooms: Record<uuid, Room> = {};
   #cleanupInterval?: NodeJS.Timer;
 
   private SetupCleanup () {
@@ -100,13 +100,11 @@ export class Rooms {
   }
 
   public FindRoom ({
-    mode,
     name,
     perma
   }: RoomOptions) {
     return _.find(this.#rooms, (room) => {
       return room.name === name &&
-        room.mode === mode &&
         room.perma === perma
     });
   }
